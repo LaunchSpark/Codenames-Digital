@@ -77,7 +77,9 @@
 
 .tv-status__line {
   margin: 0;
-  line-height: 1.1;
+  /* Room for descenders (the g in "thinking"): overflow is hidden so long
+     clues truncate instead of wrapping, which would clip a tighter line. */
+  line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
