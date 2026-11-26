@@ -1,7 +1,10 @@
 import { GameError, type Board, type ServerState } from './state'
 
 export interface CommitOptions {
-  /** False for host corrections, which are not undo steps. */
+  /**
+   * False for host corrections: not an undo step, and a barrier — earlier moves
+   * can no longer be undone, so undo can never silently revert the correction.
+   */
   undoable?: boolean
 }
 
@@ -9,7 +12,7 @@ export interface CommitOptions {
 export function commit(s: ServerState, next: Board, { undoable = true }: CommitOptions = {}): ServerState {
   const game = s.game
   if (!game) throw new GameError('not-in-lobby', 'No game is running')
-  const history = undoable ? [...game.history, game.board] : game.history
+  const history = undoable ? [...game.history, game.board] : []
   return { ...s, game: { ...game, board: next, history, votes: {} } }
 }
 

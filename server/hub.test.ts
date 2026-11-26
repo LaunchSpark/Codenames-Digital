@@ -56,6 +56,18 @@ describe('hub resilience', () => {
   })
 })
 
+describe('hub seats', () => {
+  it('does not let a TV connection take a seat', () => {
+    const h = hub()
+    const tv = new FakeSocket()
+    h.attach(tv, true)
+    tv.emit('message', JSON.stringify({ type: 'hello', client: 'tv' }))
+    tv.emit('message', JSON.stringify({ type: 'join', name: 'ann', team: 'red' }))
+    expect(tv.sent.at(-1)).toMatchObject({ type: 'error', code: 'bad-message' })
+    expect(h.state().roster.seats).toEqual({})
+  })
+})
+
 describe('hub heartbeat', () => {
   it('drops a socket that misses a ping, freeing its seat', () => {
     const h = hub()

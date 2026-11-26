@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { seededRandom } from './random'
-import { changeSeat } from './roster'
+import { changeSeat, removeSeat, setConnected } from './roster'
 import { backToLobby, giveClue, makeClueGiver, newGame, skipTurn, startGame } from './rules'
 import { codeOf, lobby, startRed } from './testing'
 import { WORDS } from './words'
@@ -71,5 +71,28 @@ describe('new game', () => {
 
   it('is not available from the lobby', () => {
     expect(codeOf(() => newGame(lobby(), WORDS, rand))).toBe('not-in-lobby')
+  })
+
+  it('needs two per team, like Start', () => {
+    const s = removeSeat(startRed(), 'eve')
+    expect(codeOf(() => newGame(s, WORDS, rand))).toBe('not-enough-players')
+  })
+})
+
+describe('rotation and connections', () => {
+  it('passes over a disconnected player when picking the clue-giver', () => {
+    let s = startGame(lobby(), WORDS, rand) // red: ann
+    s = setConnected(s, 'bob', -1)
+    s = newGame(s, WORDS, rand)
+    expect(s.game!.clueGivers.red).toBe('cy')
+    s = newGame(s, WORDS, rand)
+    expect(s.game!.clueGivers.red).toBe('ann')
+  })
+
+  it('still picks someone when the whole team is disconnected', () => {
+    let s = startGame(lobby(), WORDS, rand) // blue: dee
+    s = setConnected(setConnected(s, 'dee', -1), 'eve', -1)
+    s = newGame(s, WORDS, rand)
+    expect(s.game!.clueGivers.blue).toBe('eve')
   })
 })
