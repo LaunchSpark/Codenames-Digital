@@ -105,13 +105,17 @@ export function setConnected(s: ServerState, id: string, delta: 1 | -1): ServerS
 /** Assigns each team's clue-giver for a new game from the rotation, then advances it. */
 export function pickClueGivers(s: ServerState): { state: ServerState; clueGivers: Record<Team, string | null> } {
   const { order, nextClueGiver } = s.roster
-  const pick = (team: Team) =>
-    order[team].length ? order[team][nextClueGiver[team] % order[team].length] : null
-  return {
-    state: {
-      ...s,
-      roster: { ...s.roster, nextClueGiver: { red: nextClueGiver.red + 1, blue: nextClueGiver.blue + 1 } },
-    },
-    clueGivers: { red: pick('red'), blue: pick('blue') },
+  const next = { ...nextClueGiver }
+  const clueGivers: Record<Team, string | null> = { red: null, blue: null }
+  for (const team of ['red', 'blue'] as Team[]) {
+    const ids = order[team]
+    if (!ids.length) continue
+    // Pass over disconnected players; if nobody is connected, take whoever is due.
+    const start = next[team] % ids.length
+    let skip = ids.findIndex((_, k) => isConnected(s.roster.seats[ids[(start + k) % ids.length]]))
+    if (skip < 0) skip = 0
+    clueGivers[team] = ids[(start + skip) % ids.length]
+    next[team] += skip + 1
   }
+  return { state: { ...s, roster: { ...s.roster, nextClueGiver: next } }, clueGivers }
 }

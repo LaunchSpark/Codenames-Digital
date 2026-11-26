@@ -66,6 +66,9 @@ export function createHub(opts: { joinUrl: string; ctx: DispatchContext }): Hub 
       return
     }
 
+    if (msg.type === 'join' && conn.client !== 'player') {
+      throw new GameError('bad-message', "The TV can't join as a player")
+    }
     const result = dispatch(state, { host: conn.host, seatId: conn.seatId }, msg, opts.ctx)
     state = result.state
     // addSeat counts the joining connection, so no extra setConnected here.
