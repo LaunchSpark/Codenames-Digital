@@ -30,7 +30,7 @@
 
 .phone-muted {
   margin: 0;
-  color: var(--muted);
+  color: var(--legacy-muted);
 }
 
 /* Fields ----------------------------------------------------------------- */
@@ -43,7 +43,7 @@
 }
 
 .field__label {
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -64,7 +64,7 @@
 }
 
 .field__input:focus {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--legacy-accent);
   outline-offset: 1px;
 }
 
@@ -86,7 +86,7 @@
   padding: 10px 12px;
   border-radius: 0.6rem;
   background: var(--panel);
-  color: var(--muted);
+  color: var(--legacy-muted);
 }
 
 .phone-join__teams {
@@ -131,7 +131,7 @@
 .phone-roster h2 {
   margin: 0 0 6px;
   font-size: 0.85rem;
-  color: var(--muted);
+  color: var(--legacy-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -178,7 +178,7 @@
 }
 
 .phone-status--active {
-  border-left: 4px solid var(--accent);
+  border-left: 4px solid var(--legacy-accent);
 }
 
 .clue-form {
@@ -199,13 +199,13 @@
 }
 
 .end-turn__count {
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .end-turn--mine {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 25%, var(--panel));
+  border-color: var(--legacy-accent);
+  background: color-mix(in srgb, var(--legacy-accent) 25%, var(--panel));
 }
 
 /* One slot for the clue box and the status line: both are laid out in the same

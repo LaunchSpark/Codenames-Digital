@@ -63,7 +63,7 @@ button.word:not(:disabled):active {
 .word--revealed.word--assassin { background: var(--card-assassin); }
 
 .word--mine {
-  outline: 4px solid var(--accent);
+  outline: 4px solid var(--legacy-accent);
   outline-offset: 2px;
 }
 

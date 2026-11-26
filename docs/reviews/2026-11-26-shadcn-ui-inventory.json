@@ -1,0 +1,429 @@
+{
+  "reviewDate": "2026-11-26",
+  "baseCommit": "6d61d3a",
+  "method": "Physical source lines excluding final newline; non-test TSX and CSS under src; counts are JSX source sites, not rendered instances. Current checkout includes uncommitted changes.",
+  "baseline": {
+    "files": [
+      {
+        "file": "src/App.css",
+        "lines": 110,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "fde35af8ecbcc32bb8c9b4ca0bfb30607fcb114f93e0c1c0f600d3eccfbccade"
+      },
+      {
+        "file": "src/App.tsx",
+        "lines": 8,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "2a81f1fbefd56f28b60a1812872901666a3d8603c583c58aafdd03e8ce2e97d3"
+      },
+      {
+        "file": "src/components/Banner.tsx",
+        "lines": 21,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "c82028e1b18da426d06a5ceb47583e162b368863ae8f1f0287a1baec4b03ac14"
+      },
+      {
+        "file": "src/components/WordGrid.tsx",
+        "lines": 78,
+        "buttons": 1,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "bb949280d74922478e544cd972b92348919c6800bb8b94aa2f4caecb79240b5d"
+      },
+      {
+        "file": "src/components/banner.css",
+        "lines": 19,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "b278e7220fe3b979eb57868f36204b75c4790391939236613d0b518ce0fe87e6"
+      },
+      {
+        "file": "src/components/word-grid.css",
+        "lines": 113,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "33f29e172a8a802ea950f8e8b7053b87786886a5f9c86c131c6969008f6bb790"
+      },
+      {
+        "file": "src/index.css",
+        "lines": 12,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "2720385e7e0f5335f80e74551ca118d16a25d466c16e877bfc8ff9430c0a03d4"
+      },
+      {
+        "file": "src/main.tsx",
+        "lines": 10,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "484f93f3048565a86a47e308f5a12ee27aa12f5291f3b52a4bb5dc03d887dbc7"
+      },
+      {
+        "file": "src/phone/ClueGiverScreen.tsx",
+        "lines": 135,
+        "buttons": 4,
+        "inputs": 1,
+        "selects": 1,
+        "confirmDialogs": 0,
+        "sha256": "5fc169161722cc087415a2bfa4bcf0c0b0a36e66cad4b57979973576205ce30d"
+      },
+      {
+        "file": "src/phone/GuesserScreen.tsx",
+        "lines": 57,
+        "buttons": 1,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "89f2aa0af39c67777ef98c4c5a3c725069ebced13f9516480deec1441e1f3e70"
+      },
+      {
+        "file": "src/phone/JoinForm.tsx",
+        "lines": 57,
+        "buttons": 1,
+        "inputs": 1,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "e50d535c6c136a58534f380870ec4c53d9577295af3382ac848eb0c6d1041263"
+      },
+      {
+        "file": "src/phone/PhoneApp.tsx",
+        "lines": 60,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "4434f8f6ee60957529829ec0319de54abae377109913b36f2230c52814de7aa5"
+      },
+      {
+        "file": "src/phone/PhoneLobby.tsx",
+        "lines": 38,
+        "buttons": 1,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "f0350c63d0355f11515fe139600ec7e3c8632ff82e69fc19a4f9915836863cdd"
+      },
+      {
+        "file": "src/phone/phone.css",
+        "lines": 217,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "e64f8c453cc3b57b09459641e2052cdaecbaa44d36dbeca4c3e1fd26b46f86b5"
+      },
+      {
+        "file": "src/tv/BoardScreen.tsx",
+        "lines": 82,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "dcc2e01966b5b663dffdd0b1f22d02a2cce9eb90884b33069e833929bbde7be4"
+      },
+      {
+        "file": "src/tv/GameOver.tsx",
+        "lines": 52,
+        "buttons": 3,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "b4a442784d630cf45efff74484793a2ee175c97fe06c77158ea9f8ef27cd5287"
+      },
+      {
+        "file": "src/tv/HostMenu.tsx",
+        "lines": 194,
+        "buttons": 11,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "c338dcbca56b8031c0c2ab87edaebfdc8d88f545aa3215611c95b1799769e7f3"
+      },
+      {
+        "file": "src/tv/JoinQr.tsx",
+        "lines": 23,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "deb779a6683dc68f728704b7511d89b77ebc308ffcf29c2d3168550d10accf53"
+      },
+      {
+        "file": "src/tv/Lobby.tsx",
+        "lines": 111,
+        "buttons": 5,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "70cc60d13cde7b31f8008f94a60181e4ff886b5d926ffd9577c7f082ade40ed0"
+      },
+      {
+        "file": "src/tv/TvApp.tsx",
+        "lines": 31,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "fbb277da497bac305c7a3d3c8d956bfe0747b65712ae11d24e00efdbe5d6c1b0"
+      },
+      {
+        "file": "src/tv/tv.css",
+        "lines": 487,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "4398c95ae41cb2d705eb61ba82aee42b0b04c984bd835d42f6b9c1d742951286"
+      }
+    ],
+    "totals": {
+      "tsxFiles": 15,
+      "tsxLines": 957,
+      "cssFiles": 6,
+      "cssLines": 958,
+      "buttons": 27,
+      "inputs": 2,
+      "selects": 1,
+      "confirmDialogs": 0
+    }
+  },
+  "current": {
+    "files": [
+      {
+        "file": "src/App.css",
+        "lines": 110,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "fde35af8ecbcc32bb8c9b4ca0bfb30607fcb114f93e0c1c0f600d3eccfbccade"
+      },
+      {
+        "file": "src/App.tsx",
+        "lines": 8,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "2a81f1fbefd56f28b60a1812872901666a3d8603c583c58aafdd03e8ce2e97d3"
+      },
+      {
+        "file": "src/components/Banner.tsx",
+        "lines": 21,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "c82028e1b18da426d06a5ceb47583e162b368863ae8f1f0287a1baec4b03ac14"
+      },
+      {
+        "file": "src/components/ConfirmDialog.tsx",
+        "lines": 52,
+        "buttons": 2,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "facb8859c95f9010a9aa437c2ba6a1842038ab124b8b329d4eefcb04c8829d7f"
+      },
+      {
+        "file": "src/components/WordGrid.tsx",
+        "lines": 78,
+        "buttons": 1,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "bb949280d74922478e544cd972b92348919c6800bb8b94aa2f4caecb79240b5d"
+      },
+      {
+        "file": "src/components/banner.css",
+        "lines": 25,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "e637a396bca2ab7b019a026bdd631bb93823dc6e5cc7cb9ea25e856d7c48060e"
+      },
+      {
+        "file": "src/components/dialog.css",
+        "lines": 36,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "97d121dc0f0878d3538313ce720fae74b29c9a4f15494c19d2d52ad7f65893e9"
+      },
+      {
+        "file": "src/components/word-grid.css",
+        "lines": 113,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "33f29e172a8a802ea950f8e8b7053b87786886a5f9c86c131c6969008f6bb790"
+      },
+      {
+        "file": "src/index.css",
+        "lines": 12,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "2720385e7e0f5335f80e74551ca118d16a25d466c16e877bfc8ff9430c0a03d4"
+      },
+      {
+        "file": "src/main.tsx",
+        "lines": 10,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "484f93f3048565a86a47e308f5a12ee27aa12f5291f3b52a4bb5dc03d887dbc7"
+      },
+      {
+        "file": "src/phone/ClueGiverScreen.tsx",
+        "lines": 136,
+        "buttons": 2,
+        "inputs": 1,
+        "selects": 1,
+        "confirmDialogs": 1,
+        "sha256": "5617483654fad0f55e8cbf93c15bfe3020e51e3f68bcb2bfbf52f66f44cde1cf"
+      },
+      {
+        "file": "src/phone/GuesserScreen.tsx",
+        "lines": 57,
+        "buttons": 1,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "89f2aa0af39c67777ef98c4c5a3c725069ebced13f9516480deec1441e1f3e70"
+      },
+      {
+        "file": "src/phone/JoinForm.tsx",
+        "lines": 57,
+        "buttons": 1,
+        "inputs": 1,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "e50d535c6c136a58534f380870ec4c53d9577295af3382ac848eb0c6d1041263"
+      },
+      {
+        "file": "src/phone/PhoneApp.tsx",
+        "lines": 60,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "4434f8f6ee60957529829ec0319de54abae377109913b36f2230c52814de7aa5"
+      },
+      {
+        "file": "src/phone/PhoneLobby.tsx",
+        "lines": 38,
+        "buttons": 1,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "f0350c63d0355f11515fe139600ec7e3c8632ff82e69fc19a4f9915836863cdd"
+      },
+      {
+        "file": "src/phone/phone.css",
+        "lines": 230,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "d720dee3bdef0574f70568513f4b25e1acd56cc2d53ac3bc545693a4ba88ff0e"
+      },
+      {
+        "file": "src/tv/BoardScreen.tsx",
+        "lines": 82,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "dcc2e01966b5b663dffdd0b1f22d02a2cce9eb90884b33069e833929bbde7be4"
+      },
+      {
+        "file": "src/tv/GameOver.tsx",
+        "lines": 52,
+        "buttons": 3,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "6c16c683101e418a888454d06ccd990b0d13e3e0cc82520206ebdb633be90a14"
+      },
+      {
+        "file": "src/tv/HostMenu.tsx",
+        "lines": 179,
+        "buttons": 7,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 2,
+        "sha256": "5398ceee41db384a6674ebbf2a9098cb25c5b3153cb1bd324f1e88c6e90aab27"
+      },
+      {
+        "file": "src/tv/JoinQr.tsx",
+        "lines": 23,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "deb779a6683dc68f728704b7511d89b77ebc308ffcf29c2d3168550d10accf53"
+      },
+      {
+        "file": "src/tv/Lobby.tsx",
+        "lines": 113,
+        "buttons": 5,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "0b0558fbdbbdbf27775d4a9ed4d7946f04770559b537ababf6d8354d2eff2306"
+      },
+      {
+        "file": "src/tv/TvApp.tsx",
+        "lines": 31,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "fbb277da497bac305c7a3d3c8d956bfe0747b65712ae11d24e00efdbe5d6c1b0"
+      },
+      {
+        "file": "src/tv/tv.css",
+        "lines": 475,
+        "buttons": 0,
+        "inputs": 0,
+        "selects": 0,
+        "confirmDialogs": 0,
+        "sha256": "2bc18257563ea69d4c8f31f03075daa07b9420c94c28fe77362920285e3090cb"
+      }
+    ],
+    "totals": {
+      "tsxFiles": 16,
+      "tsxLines": 997,
+      "cssFiles": 7,
+      "cssLines": 1001,
+      "buttons": 23,
+      "inputs": 2,
+      "selects": 1,
+      "confirmDialogs": 3
+    }
+  }
+}

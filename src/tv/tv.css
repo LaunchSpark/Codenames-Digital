@@ -19,7 +19,7 @@
 .tv-waiting {
   display: grid;
   place-items: center;
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 2vw;
 }
 
@@ -71,12 +71,12 @@
 }
 
 .mode[aria-pressed='true'] {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--legacy-accent);
+  background: color-mix(in srgb, var(--legacy-accent) 22%, transparent);
 }
 
 .mode:disabled {
-  color: var(--muted);
+  color: var(--legacy-muted);
   opacity: 0.6;
 }
 
@@ -108,7 +108,7 @@
 
 .tv-lobby__hint {
   margin: 1.4vw 0 0.2vw;
-  color: var(--muted);
+  color: var(--legacy-muted);
 }
 
 .tv-lobby__url {
@@ -146,7 +146,7 @@
 }
 
 .roster__count {
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 1.6vw;
   font-variant-numeric: tabular-nums;
 }
@@ -169,7 +169,7 @@
 }
 
 .roster__list li.is-away {
-  color: var(--muted);
+  color: var(--legacy-muted);
 }
 
 .dot {
@@ -180,7 +180,7 @@
 }
 
 .dot--on { background: #3fcf6d; }
-.dot--off { border: 2px solid var(--muted); }
+.dot--off { border: 2px solid var(--legacy-muted); }
 
 .tv-lobby__start {
   grid-column: 1 / -1;
@@ -192,7 +192,7 @@
 
 .tv-lobby__need {
   margin: 0;
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 1.5vw;
 }
 
@@ -238,7 +238,7 @@
   display: flex;
   align-items: center;
   gap: 0.8vw;
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 1.6vw;
   white-space: nowrap;
   --pip-size: 1.1vw;
@@ -304,7 +304,7 @@
 
 .tv-clues h2 {
   margin: 0 0 0.6vw;
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 1vw;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -337,7 +337,7 @@
   display: flex;
   align-items: center;
   gap: 0.8vw;
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 0.9vw;
   word-break: break-all;
 }
@@ -382,7 +382,7 @@
 
 .host-menu__section h3 {
   margin: 0 0 0.6vw;
-  color: var(--team-text, var(--muted));
+  color: var(--team-text, var(--legacy-muted));
   font-size: 1.1vw;
 }
 
@@ -422,7 +422,7 @@
 
 .tv-over__why {
   margin: 0;
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 2.2vw;
 }
 
@@ -442,7 +442,7 @@
   padding: 0 0 0 2vw;
   overflow-y: auto;
   font-size: 0.95vw;
-  color: var(--muted);
+  color: var(--legacy-muted);
 }
 
 .host-menu__move {
@@ -469,7 +469,7 @@
   border: 1px solid var(--line);
   border-radius: 0.4vw;
   background: transparent;
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 1.1vw;
   cursor: pointer;
 }
@@ -477,5 +477,5 @@
 .roster__move:hover:not(:disabled),
 .roster__move:focus-visible {
   color: var(--text);
-  border-color: var(--muted);
+  border-color: var(--legacy-muted);
 }

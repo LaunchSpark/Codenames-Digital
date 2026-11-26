@@ -3,8 +3,8 @@
   --panel: #1d2026;
   --line: #2e333c;
   --text: #eceef2;
-  --muted: #939aa8;
-  --accent: #4f8cff;
+  --legacy-muted: #939aa8;
+  --legacy-accent: #4f8cff;
 
   --card-red: #c0392b;
   --card-blue: #2c6fbb;
@@ -48,7 +48,7 @@ h1 {
 }
 
 .btn--primary {
-  background: var(--accent);
+  background: var(--legacy-accent);
   color: #fff;
 }
 
@@ -70,7 +70,7 @@ h1 {
   padding: 0.4rem 0.7rem;
   border-color: var(--line);
   background: transparent;
-  color: var(--muted);
+  color: var(--legacy-muted);
   font-size: 0.85rem;
   font-weight: 500;
 }
@@ -101,8 +101,8 @@ h1 {
 }
 
 .chip[aria-pressed='true'] {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--legacy-accent);
+  background: color-mix(in srgb, var(--legacy-accent) 22%, transparent);
   opacity: 1;
 }
 

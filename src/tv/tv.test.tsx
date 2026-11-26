@@ -45,7 +45,7 @@ describe('Lobby', () => {
     const { view, you } = fixture('tv-lobby')
     renderLobby(view, you)
     const red = screen.getByRole('list', { name: 'Red team' })
-    expect(within(red).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Ana', 'Ben', 'Cara'])
+    expect(within(red).getAllByRole('listitem').map((li, i) => within(li).getByText(view.teams.red.players[i].name, { exact: true }).textContent)).toEqual(['Ana', 'Ben', 'Cara'])
   })
 
   it('start is host-only', () => {

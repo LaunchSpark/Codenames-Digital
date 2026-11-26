@@ -7,6 +7,8 @@
  *   npm run playtest -- --no-auto         # leave the join screens for you
  *   npm run playtest -- --phones-at 0,0   # where the phone row starts (default: second screen)
  *
+ *   npm run playtest -- --lobby-preview  # show join, phone lobby, and TV lobby together
+ *
  * Ctrl+C closes everything.
  */
 import { parseArgs } from 'node:util'
@@ -15,6 +17,7 @@ import { join, openTable } from '../e2e/harness'
 const { values } = parseArgs({
   options: {
     phones: { type: 'string', default: '4' },
+    'lobby-preview': { type: 'boolean', default: false },
     'no-auto': { type: 'boolean', default: false },
     'phones-at': { type: 'string', default: '1920,0' },
     'tv-at': { type: 'string', default: '0,0' },
@@ -36,7 +39,10 @@ const table = await openTable({
 console.log(`\nTV:     ${table.tvUrl}`)
 console.log(`Phones: ${table.joinUrl}  (${phones} windows)`)
 
-if (!values['no-auto']) {
+if (values['lobby-preview']) {
+  for (const phone of table.phones.slice(0, -1)) await join(phone)
+  console.log('Lobby preview: the last phone is ready for you to join. Start the game from the TV.')
+} else if (!values['no-auto']) {
   for (const phone of table.phones) await join(phone)
   if (phones >= 4) {
     await table.tv.getByRole('button', { name: 'Start' }).click()
