@@ -29,10 +29,19 @@ export function PhoneScreen({ game, send }: { game: Snapshot; send: (m: ClientMe
     screen = <JoinForm view={view} send={send} disabled={disabled} />
   } else if (view && you?.kind === 'player') {
     const props: PhoneScreenProps = { view, you, send, disabled }
-    if (view.phase.name === 'over') [screenName, screen] = ['over', <PhoneOver {...props} />]
-    else if (view.phase.name === 'lobby') [screenName, screen] = ['lobby', <PhoneLobby {...props} />]
-    else if (you.role === 'clue-giver') [screenName, screen] = ['clue-giver', <ClueGiverScreen {...props} />]
-    else [screenName, screen] = ['guesser', <GuesserScreen {...props} />]
+    if (view.phase.name === 'over') {
+      screenName = 'over'
+      screen = <PhoneOver {...props} />
+    } else if (view.phase.name === 'lobby') {
+      screenName = 'lobby'
+      screen = <PhoneLobby {...props} />
+    } else if (you.role === 'clue-giver') {
+      screenName = 'clue-giver'
+      screen = <ClueGiverScreen {...props} />
+    } else {
+      screenName = 'guesser'
+      screen = <GuesserScreen {...props} />
+    }
   }
 
   // A new screen starts at the top: otherwise scrolling down to tap Join
