@@ -50,16 +50,18 @@ button.word:not(:disabled):active {
 
 /* Unrevealed cards whose colour this viewer knows (clue-giver, game over):
    tinted so the colour reads at a glance but the word stays legible. */
-.word--red { border-color: var(--card-red); background: color-mix(in srgb, var(--card-red) 28%, var(--card-unknown)); }
-.word--blue { border-color: var(--card-blue); background: color-mix(in srgb, var(--card-blue) 28%, var(--card-unknown)); }
-.word--neutral { border-color: #a8956d; background: var(--card-neutral); }
+/* Unpicked cards on a clue-giver's key: a soft tint, so the full colours stay
+   for picked cards and the two read apart at a glance. */
+.word--red { border-color: color-mix(in srgb, var(--card-red) 55%, var(--card-unknown)); background: color-mix(in srgb, var(--card-red) 14%, var(--card-unknown)); }
+.word--blue { border-color: color-mix(in srgb, var(--card-blue) 55%, var(--card-unknown)); background: color-mix(in srgb, var(--card-blue) 14%, var(--card-unknown)); }
+.word--neutral { border-color: color-mix(in srgb, #a8956d 45%, var(--card-unknown)); background: color-mix(in srgb, var(--card-neutral) 30%, var(--card-unknown)); }
 .word--assassin { border-color: #000; background: #3a3d44; color: #f2f2f2; }
 
 /* Revealed: solid team colour, the word dimmed beneath. */
 .word--revealed { color: #ffffffb0; }
-.word--revealed.word--red { background: var(--card-red); }
-.word--revealed.word--blue { background: var(--card-blue); }
-.word--revealed.word--neutral { background: var(--card-neutral); color: #1b1d2299; }
+.word--revealed.word--red { border-color: var(--card-red); background: var(--card-red); }
+.word--revealed.word--blue { border-color: var(--card-blue); background: var(--card-blue); }
+.word--revealed.word--neutral { border-color: #a8956d; background: var(--card-neutral); color: #1b1d2299; }
 .word--revealed.word--assassin { background: var(--card-assassin); }
 
 .word--mine {
