@@ -122,6 +122,12 @@ gets stuck (requested by the user):
 - **Remove player** — delete a seat that isn't coming back. If it was a current
   clue-giver, the host is prompted to pick a replacement.
 
+- **Undo (host)** — added 2026-11-26. Steps back through everything this
+  game: clues, reveals, turn ends, clue-giver undos, and the host's own skips
+  and clue-giver changes. Shows the recent moves as a list so the host can jump
+  straight back to a point. Removed players stay removed; if a restored
+  clue-giver has left, the host is asked to pick one.
+
 Host-menu actions are not undoable via the clue-givers' Undo. *(My call —
 Undo is for game moves, these are corrections.)*
 

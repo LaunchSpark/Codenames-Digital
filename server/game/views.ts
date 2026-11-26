@@ -2,7 +2,7 @@ import type { CardView, GameView, Team, TeamView, You } from '../../src/shared/p
 import { isConnected, seatOf } from './roster'
 import { remaining, voters } from './rules'
 import type { ServerState } from './state'
-import { canUndo } from './undo'
+import { canUndo, timelineLabels } from './undo'
 
 export type Viewer = { kind: 'tv'; host: boolean } | { kind: 'spectator' } | { kind: 'player'; seatId: string }
 
@@ -63,6 +63,7 @@ export function viewFor(s: ServerState, viewer: Viewer, joinUrl: string): { view
       voterCount: voterIds.length,
       endTurnVotes: votes.filter((v) => v === 'end').length,
       canUndo: canUndo(s),
+      timeline: game && viewer.kind === 'tv' && viewer.host ? timelineLabels(game) : null,
       joinUrl,
     },
     you: youFor(s, viewer),

@@ -90,6 +90,7 @@ function withGame(s: ServerState): ServerState {
     game: {
       board: { cards: [], startingTeam: 'red', phase: { name: 'clue', team: 'red' }, clues: [] },
       history: [],
+      timeline: [],
       clueGivers: { red: s.roster.order.red[0] ?? null, blue: s.roster.order.blue[0] ?? null },
       votes: {},
     },
