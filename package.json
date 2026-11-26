@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint src",
+    "lint": "oxlint src server",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "host": "vite build && tsx server/main.ts",
+    "dev:server": "tsx watch server/main.ts --join-port 5173 --no-static"
   },
   "dependencies": {
     "react": "^19.2.8",
