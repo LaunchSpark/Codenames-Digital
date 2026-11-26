@@ -154,13 +154,13 @@ describe('game server', () => {
     giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
     await me.c.state((s) => s.view.phase.name === 'guess')
     me.c.send({ type: 'vote', card: 0 })
-    await me.c.state((s) => s.you.kind === 'player' && s.you.vote === 0)
+    await me.c.state((s) => s.you.kind === 'player' && s.you.votes[0] === 0)
 
     await second.close()
     // Wait for the broadcast caused by the closed socket, seen by the teammate.
     await teammate.c.state((s) => s.view.board![0].votes === 1)
     const after = await me.c.state((s) => s.view.voterCount === 2)
-    expect(after.you).toMatchObject({ vote: 0 })
+    expect(after.you).toMatchObject({ votes: [0] })
     expect(after.view.teams[team].players.find((p) => p.id === me.playerId)!.connected).toBe(true)
 
     await me.c.close()

@@ -2,6 +2,8 @@ import { WordGrid } from '../components/WordGrid'
 import { guessesLeftText, TEAM_NAME } from '../components/teams'
 import type { PhoneScreenProps } from './types'
 
+const voteHint = (n: number) => (n === 1 ? 'Tap a word to vote.' : `Vote for up to ${n} words.`)
+
 export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
   const { phase } = view
   const myGuess = phase.name === 'guess' && phase.team === you.team
@@ -10,7 +12,7 @@ export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
   if (phase.name === 'guess') {
     const clue = `${phase.clue.word} ${phase.clue.number}`
     status = myGuess
-      ? `${clue} — ${guessesLeftText(phase.guessesLeft)}. Tap a word to vote.`
+      ? `${clue} — ${guessesLeftText(phase.guessesLeft)}. ${voteHint(phase.guessesLeft)}`
       : `${TEAM_NAME[phase.team]} is guessing: ${clue}`
   } else if (phase.name === 'clue') {
     status = phase.team === you.team ? `Waiting for ${TEAM_NAME[phase.team]}'s clue…` : `${TEAM_NAME[phase.team]}'s turn`
@@ -31,7 +33,7 @@ export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
           cards={view.board}
           showPips={phase.name === 'guess'}
           voterCount={view.voterCount}
-          myVote={you.vote}
+          myVotes={you.votes}
           onTap={myGuess ? (card) => send({ type: 'vote', card }) : undefined}
           disabled={disabled}
           variant="phone"
@@ -42,8 +44,8 @@ export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
       {myGuess && (
         <button
           type="button"
-          className={`btn end-turn${you.vote === 'end' ? ' end-turn--mine' : ''}`}
-          aria-pressed={you.vote === 'end'}
+          className={`btn end-turn${you.votedEnd ? ' end-turn--mine' : ''}`}
+          aria-pressed={you.votedEnd}
           disabled={disabled || phase.guessesMade < 1}
           onClick={() => send({ type: 'vote-end' })}
         >

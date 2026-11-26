@@ -72,7 +72,7 @@ describe('voting', () => {
     const card = colorIndex(s, 'red')
     const one = castVote(s, 'bob', card)
     expect(one.game!.board.cards[card].revealed).toBe(false)
-    expect(one.game!.votes).toEqual({ bob: card })
+    expect(one.game!.votes).toEqual({ bob: [card] })
     expect(castVote(one, 'cy', card).game!.board.cards[card].revealed).toBe(true)
   })
 
@@ -80,6 +80,64 @@ describe('voting', () => {
     const s = redGuessing()
     const card = colorIndex(s, 'red')
     expect(castVote(castVote(s, 'bob', card), 'bob', card).game!.votes).toEqual({})
+  })
+
+  it('lets a guesser back several cards, up to the guesses left', () => {
+    const s = redGuessing(1) // 2 guesses left
+    const [a, b, c] = [0, 1, 2].map((n) => colorIndex(s, 'red', n))
+    const two = castVote(castVote(s, 'bob', a), 'bob', b)
+    expect(two.game!.votes).toEqual({ bob: [a, b] })
+    // Out of votes: the next tap moves the oldest one.
+    expect(castVote(two, 'bob', c).game!.votes).toEqual({ bob: [b, c] })
+  })
+
+  it('rescinds just the tapped vote', () => {
+    const s = redGuessing(2)
+    const [a, b, c] = [0, 1, 2].map((n) => colorIndex(s, 'red', n))
+    let t = castVote(castVote(castVote(s, 'bob', a), 'bob', b), 'bob', c)
+    t = castVote(t, 'bob', b)
+    expect(t.game!.votes).toEqual({ bob: [a, c] })
+  })
+
+  it('reveals a card once every guesser backs it, keeping their other votes', () => {
+    const s = redGuessing(2) // 3 guesses left
+    const [a, b, c] = [0, 1, 2].map((n) => colorIndex(s, 'red', n))
+    let t = castVote(castVote(s, 'bob', a), 'bob', b)
+    t = castVote(castVote(t, 'cy', c), 'cy', a)
+    expect(t.game!.board.cards[a].revealed).toBe(true)
+    expect(phase(t)).toMatchObject({ name: 'guess', guessesLeft: 2, guessesMade: 1 })
+    expect(t.game!.votes).toEqual({ bob: [b], cy: [c] })
+  })
+
+  it('drops all votes when the turn ends on a reveal', () => {
+    const s = redGuessing(2)
+    const red = colorIndex(s, 'red')
+    const neutral = colorIndex(s, 'neutral')
+    let t = castVote(castVote(s, 'bob', red), 'bob', neutral)
+    t = castVote(t, 'cy', neutral)
+    expect(phase(t)).toEqual({ name: 'clue', team: 'blue' })
+    expect(t.game!.votes).toEqual({})
+  })
+
+  it('reveals every card that becomes unanimous at once, while the turn lasts', () => {
+    const s = redGuessing(2)
+    const [a, b, c] = [0, 1, 2].map((n) => colorIndex(s, 'red', n))
+    let t = castVote(castVote(s, 'bob', a), 'bob', b)
+    t = castVote(t, 'cy', c)
+    // cy leaves: bob's two votes now stand alone.
+    t = settleVotes(setConnected(t, 'cy', -1))
+    expect([a, b].map((i) => t.game!.board.cards[i].revealed)).toEqual([true, true])
+    expect(phase(t)).toMatchObject({ name: 'guess', guessesLeft: 1, guessesMade: 2 })
+  })
+
+  it('treats an end-turn vote and card votes as either/or', () => {
+    let s = redGuessing(2)
+    s = bothVote(s, colorIndex(s, 'red'))
+    const [a, b] = [0, 1].map((n) => colorIndex(s, 'red', n + 1))
+    s = castVote(castVote(s, 'bob', a), 'bob', b)
+    s = castEndVote(s, 'bob')
+    expect(s.game!.votes).toEqual({ bob: 'end' })
+    expect(castVote(s, 'bob', a).game!.votes).toEqual({ bob: [a] })
   })
 
   it('rejects votes from outside the guessing team and on bad cards', () => {

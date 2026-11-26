@@ -194,7 +194,7 @@ describe('guesser', () => {
 
   it('my end-turn vote is highlighted', () => {
     const g = game('phone-guesser-guess')
-    if (g.you!.kind === 'player') g.you!.vote = 'end'
+    if (g.you!.kind === 'player') g.you!.votedEnd = true
     render(<PhoneScreen game={g} send={vi.fn()} />)
     expect(button(/End turn/).getAttribute('aria-pressed')).toBe('true')
   })

@@ -63,7 +63,7 @@ describe('roster', () => {
 
   it('dropping the last connection clears that seat’s vote', () => {
     let s = withGame(lobbyWith({ red: ['a', 'b'], blue: ['c', 'd'] }))
-    s = { ...s, game: { ...s.game!, votes: { b: 3 } } }
+    s = { ...s, game: { ...s.game!, votes: { b: [3] } } }
     s = setConnected(s, 'b', -1)
     expect(s.game!.votes).toEqual({})
   })
