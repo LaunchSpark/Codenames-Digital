@@ -84,6 +84,14 @@ describe('clue-giver', () => {
     expect(container.querySelectorAll('.word--unknown')).toHaveLength(0)
   })
 
+  it('sees a colour-only key card, while guessers see words', () => {
+    const { container } = setup('phone-cluegiver-clue')
+    expect(container.querySelector('.word-grid--key')).not.toBeNull()
+    cleanup()
+    const guesser = setup('phone-guesser-guess')
+    expect(guesser.container.querySelector('.word-grid--key')).toBeNull()
+  })
+
   it('clue form sends word and number', () => {
     const { send } = setup('phone-cluegiver-clue')
     expect(button('Give clue').disabled).toBe(true)

@@ -1,4 +1,11 @@
+/* The look of unpicked cards, in one place to tune:
+   --key-tint    how much of the team colour fills an unpicked card's background
+   --key-border  how much of it the border carries
+   --unpicked-scale  unpicked cards sit slightly smaller, so picked ones stand out */
 .word-grid {
+  --key-tint: 28%;
+  --key-border: 80%;
+  --unpicked-scale: 0.92;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--word-gap);
@@ -48,13 +55,19 @@ button.word:not(:disabled):active {
   transform: scale(0.97);
 }
 
-/* Unrevealed cards whose colour this viewer knows (clue-giver, game over):
-   tinted so the colour reads at a glance but the word stays legible. */
-/* Unpicked cards on a clue-giver's key: a soft tint, so the full colours stay
-   for picked cards and the two read apart at a glance. */
-.word--red { border-color: color-mix(in srgb, var(--card-red) 55%, var(--card-unknown)); background: color-mix(in srgb, var(--card-red) 14%, var(--card-unknown)); }
-.word--blue { border-color: color-mix(in srgb, var(--card-blue) 55%, var(--card-unknown)); background: color-mix(in srgb, var(--card-blue) 14%, var(--card-unknown)); }
-.word--neutral { border-color: color-mix(in srgb, #a8956d 45%, var(--card-unknown)); background: color-mix(in srgb, var(--card-neutral) 30%, var(--card-unknown)); }
+/* Unpicked cards sit a touch smaller than picked ones. `scale` doesn't affect
+   layout, so nothing around the board moves when a card is picked. */
+.word:not(.word--revealed) {
+  scale: var(--unpicked-scale);
+  transition: scale 200ms ease;
+}
+
+/* Unpicked cards whose colour this viewer knows (clue-giver, game over):
+   a tint plus a coloured border, so the colour reads at a glance and the word
+   stays legible. Picked cards (below) get the full colour. */
+.word--red { border-color: color-mix(in srgb, var(--card-red) var(--key-border), var(--card-unknown)); background: color-mix(in srgb, var(--card-red) var(--key-tint), var(--card-unknown)); }
+.word--blue { border-color: color-mix(in srgb, var(--card-blue) var(--key-border), var(--card-unknown)); background: color-mix(in srgb, var(--card-blue) var(--key-tint), var(--card-unknown)); }
+.word--neutral { border-color: color-mix(in srgb, #a8956d var(--key-border), var(--card-unknown)); background: color-mix(in srgb, var(--card-neutral) calc(var(--key-tint) * 1.6), var(--card-unknown)); }
 .word--assassin { border-color: #000; background: #3a3d44; color: #f2f2f2; }
 
 /* Revealed: solid team colour, the word dimmed beneath. */
@@ -120,3 +133,29 @@ button.word:not(:disabled):active {
      (html lang="en") catches anything still too long at the minimum size. */
   font-size: clamp(0.5rem, min(2.9vw, calc((min(100vw, 520px) - 80px) * 0.28 / var(--chars, 1))), 0.9rem);
 }
+
+/* A clue-giver's key card: solid colour tiles, no words. Unpicked tiles are
+   full colour and full size; picked ones fade back and shrink, so what's left
+   to clue stands out. */
+.word-grid--key {
+  --unpicked-scale: 1;
+}
+
+.word-grid--key .word {
+  min-height: 3.2rem;
+  border: 0;
+}
+
+.word-grid--key .word--red { background: var(--card-red); }
+.word-grid--key .word--blue { background: var(--card-blue); }
+.word-grid--key .word--neutral { background: var(--card-neutral); }
+.word-grid--key .word--assassin { background: var(--card-assassin); box-shadow: inset 0 0 0 2px #fff3; }
+
+.word-grid--key .word--revealed {
+  opacity: 0.28;
+  scale: 0.8;
+}
+
+/* Pips need to read on solid colour. */
+.word-grid--key .pip { border-color: #fffc; }
+.word-grid--key .pip--filled { background: #fff; }

@@ -41,7 +41,8 @@ describe('layout stays put', () => {
     const giver = (await givers[0].page.getByLabel('Clue').isVisible()) ? givers[0] : givers[1]
     const otherGiver = givers.find((g) => g !== giver)!
     const guesser = team(giver.team)[1]
-    const word = (await giver.page.locator('.word-grid .word').first().innerText()).trim()
+    // Clue-givers see a colour-only key card, so take a board word from the TV.
+    const word = (await table.tv.locator('.word-grid .word').first().innerText()).trim()
 
     await snapAll('start')
 
