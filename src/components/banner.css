@@ -1,0 +1,19 @@
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.banner--offline {
+  background: #5a4a12;
+  color: #ffe9a8;
+}
+
+.banner--error {
+  background: #5b1d1d;
+  color: #ffd2d2;
+}
