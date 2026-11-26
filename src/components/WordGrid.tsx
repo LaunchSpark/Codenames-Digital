@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { CardView } from '../shared/protocol'
 import './word-grid.css'
 
@@ -33,6 +34,9 @@ export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled,
           .filter(Boolean)
           .join(' ')
 
+        // Longest run that can't wrap, so CSS can shrink long words to fit.
+        const style = { '--chars': Math.max(...card.word.split(/\s+/).map((w) => w.length)) } as CSSProperties
+
         const body = (
           <>
             <span className="word__text">{card.word}</span>
@@ -45,6 +49,7 @@ export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled,
             key={i}
             type="button"
             className={className}
+            style={style}
             aria-pressed={myVote === i}
             disabled={disabled}
             onClick={() => onTap(i)}
@@ -52,7 +57,7 @@ export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled,
             {body}
           </button>
         ) : (
-          <div key={i} className={className}>
+          <div key={i} className={className} style={style}>
             {body}
           </div>
         )
