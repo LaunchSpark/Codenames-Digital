@@ -17,6 +17,9 @@ const TEAMS: Team[] = ['red', 'blue']
 export function HostMenu({ view, send, disabled }: HostMenuProps) {
   const [userOpen, setUserOpen] = useState(false)
   const [removing, setRemoving] = useState<PlayerInfo | null>(null)
+  /** Index into view.timeline the host is about to rewind to. */
+  const [rewinding, setRewinding] = useState<number | null>(null)
+  const timeline = view.timeline ?? []
 
   const needsPick = TEAMS.filter((t) => view.teams[t].clueGiverId === null)
   const open = userOpen || needsPick.length > 0
@@ -60,6 +63,58 @@ export function HostMenu({ view, send, disabled }: HostMenuProps) {
               </section>
             )
           })}
+
+          <section className="host-menu__section host-menu__undo">
+            <h3>Undo</h3>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              disabled={disabled || timeline.length === 0}
+              onClick={() => send({ type: 'host:undo', steps: 1 })}
+            >
+              Undo last move
+            </button>
+            {rewinding !== null && timeline[rewinding] !== undefined ? (
+              <div className="host-menu__confirm">
+                <p>Go back to before “{timeline[rewinding]}”?</p>
+                <button
+                  type="button"
+                  className="btn btn--danger"
+                  disabled={disabled}
+                  onClick={() => {
+                    send({ type: 'host:undo', steps: timeline.length - rewinding })
+                    setRewinding(null)
+                  }}
+                >
+                  Yes, go back
+                </button>
+                <button type="button" className="btn btn--ghost" onClick={() => setRewinding(null)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              timeline.length > 0 && (
+                <ol className="host-menu__timeline" reversed>
+                  {timeline
+                    .map((label, i) => ({ label, i }))
+                    .reverse()
+                    .map(({ label, i }) => (
+                      <li key={i}>
+                        <button
+                          type="button"
+                          className="host-menu__move"
+                          aria-label={`Go back to before: ${label}`}
+                          disabled={disabled}
+                          onClick={() => setRewinding(i)}
+                        >
+                          {label}
+                        </button>
+                      </li>
+                    ))}
+                </ol>
+              )
+            )}
+          </section>
 
           <section className="host-menu__section">
             <button

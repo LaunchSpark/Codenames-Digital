@@ -147,6 +147,35 @@ describe('BoardScreen', () => {
     expect(screen.queryByText('Pick a new clue-giver for Red')).toBeNull()
   })
 
+  it('host undo jumps back to a chosen move after confirming', () => {
+    const { view, you } = fixture('tv-guess-host')
+    view.timeline = ['Red clue: OCEAN 2', 'Red revealed APPLE (red)']
+    const send = vi.fn()
+    render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Go back to before: Red clue: OCEAN 2' }))
+    expect(send).not.toHaveBeenCalled()
+    expect(screen.getByText('Go back to before “Red clue: OCEAN 2”?')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, go back' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:undo', steps: 2 })
+  })
+
+  it('host undo last steps back one move, and is off with nothing to undo', () => {
+    const { view, you } = fixture('tv-guess-host')
+    view.timeline = ['Red clue: OCEAN 2']
+    const send = vi.fn()
+    const { unmount } = render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Undo last move' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:undo', steps: 1 })
+    unmount()
+
+    view.timeline = []
+    render(<BoardScreen view={view} you={you} send={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    expect((screen.getByRole('button', { name: 'Undo last move' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
   it('disabled turns host actions off', () => {
     const { view, you } = fixture('tv-needs-clue-giver')
     render(<BoardScreen view={view} you={you} send={vi.fn()} disabled />)
@@ -164,6 +193,15 @@ describe('GameOver', () => {
     fireEvent.click(screen.getByRole('button', { name: 'New game' }))
     fireEvent.click(screen.getByRole('button', { name: 'Back to lobby' }))
     expect(send.mock.calls).toEqual([[{ type: 'host:new-game' }], [{ type: 'host:lobby' }]])
+  })
+
+  it('lets the host undo the game-ending move', () => {
+    const { view } = fixture('tv-over')
+    view.timeline = ['Red clue: OCEAN 3', 'Red revealed CENTAUR (assassin) — Blue wins']
+    const send = vi.fn()
+    render(<GameOver view={view} you={{ kind: 'tv', host: true }} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Undo last move' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:undo', steps: 1 })
   })
 
   it('hides host controls from a non-host TV', () => {
