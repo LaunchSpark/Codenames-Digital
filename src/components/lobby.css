@@ -48,9 +48,8 @@
 .player-avatar { flex:none; width:32px; height:32px; display:grid; place-items:center; border:1px solid var(--roster-border); border-radius:8px; background:var(--roster-tint); color:var(--roster-text); font-size:13px; font-weight:600; }
 .player-name { min-width:0; overflow-wrap:anywhere; flex:1; }
 .empty-roster { color:hsl(var(--muted-foreground)); font-size:14px; }
-/* TV lobby sizes use --tvu instead of vw: 1vw on a 16:9 screen, but capped by
-   the height so a windowed (wider than 16:9) browser still fits without clipping. */
-.tv-lobby { --tvu:min(1vw, 1.7778vh); display:flex; flex-direction:column; gap:calc(1.4 * var(--tvu)); min-height:0; padding:calc(.8 * var(--tvu)); }
+/* TV lobby sizes use --tvu (defined on .tv in src/tv/tv.css), not vw. */
+.tv-lobby { display:flex; flex-direction:column; gap:calc(1.4 * var(--tvu)); min-height:0; padding:calc(.8 * var(--tvu)); }
 .tv-lobby__header { display:flex; align-items:center; justify-content:space-between; }
 .tv-lobby .lobby-brand { font-size:calc(1.65 * var(--tvu)); gap:calc(.8 * var(--tvu)); }
 .tv-lobby .lobby-brand__mark { width:calc(3.3 * var(--tvu)); height:calc(3.3 * var(--tvu)); border-radius:calc(.7 * var(--tvu)); }
