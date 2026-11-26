@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { WordGrid } from '../components/WordGrid'
 import { guessesLeftText, TEAM_NAME } from '../components/teams'
 import type { ClientMessage, Phase, Team } from '../shared/protocol'
@@ -15,11 +16,19 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
         <UndoButton canUndo={view.canUndo} disabled={disabled} send={send} />
       </header>
 
-      {myClueTurn ? (
-        <ClueForm send={send} disabled={disabled} />
-      ) : (
-        <p className="phone-status">{statusLine(phase, you.team)}</p>
-      )}
+      {/*
+        The clue box and the status line share one slot, sized to the larger,
+        so the board never jumps when the turn changes. The clue box is reset
+        for each new clue (keyed on the clue count).
+      */}
+      <div className="turn-slot">
+        <div aria-hidden={!myClueTurn} inert={!myClueTurn} className={myClueTurn ? '' : 'is-hidden'}>
+          <ClueForm key={view.clues.length} send={send} disabled={disabled || !myClueTurn} />
+        </div>
+        <p className={`phone-status${myClueTurn ? ' is-hidden' : ''}`} aria-hidden={myClueTurn}>
+          {statusLine(phase, you.team)}
+        </p>
+      </div>
 
       {view.board && (
         <WordGrid
@@ -44,7 +53,7 @@ function statusLine(phase: Phase, mine: Team) {
   return ''
 }
 
-/** Lives only during this team's clue phase, so a new turn starts blank. */
+/** Remounted for each new clue, so every turn starts blank. */
 function ClueForm({ send, disabled }: { send: (m: ClientMessage) => void; disabled: boolean }) {
   const [word, setWord] = useState('')
   const [number, setNumber] = useState(1)
@@ -100,36 +109,28 @@ function UndoButton({
 }) {
   const [confirming, setConfirming] = useState(false)
 
-  if (confirming && canUndo) {
-    return (
-      <div className="undo-confirm" role="group" aria-label="Confirm undo">
-        <span>Undo last move?</span>
-        <button
-          type="button"
-          className="btn btn--danger btn--small"
+  return (
+    <>
+      <button
+        type="button"
+        className="btn btn--ghost"
+        disabled={disabled || !canUndo}
+        onClick={() => setConfirming(true)}
+      >
+        Undo
+      </button>
+      {confirming && canUndo && (
+        <ConfirmDialog
+          message="Undo last move?"
+          confirmLabel="Yes, undo"
           disabled={disabled}
-          onClick={() => {
+          onConfirm={() => {
             send({ type: 'undo' })
             setConfirming(false)
           }}
-        >
-          Yes, undo
-        </button>
-        <button type="button" className="btn btn--ghost btn--small" onClick={() => setConfirming(false)}>
-          Cancel
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      className="btn btn--ghost"
-      disabled={disabled || !canUndo}
-      onClick={() => setConfirming(true)}
-    >
-      Undo
-    </button>
+          onCancel={() => setConfirming(false)}
+        />
+      )}
+    </>
   )
 }

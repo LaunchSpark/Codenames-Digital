@@ -191,14 +191,6 @@
   grid-column: 1 / -1;
 }
 
-.undo-confirm {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  font-size: 0.9rem;
-}
 
 .end-turn {
   border-color: var(--line);
@@ -214,4 +206,25 @@
 .end-turn--mine {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 25%, var(--panel));
+}
+
+/* One slot for the clue box and the status line: both are laid out in the same
+   grid cell, so the slot is always the larger height and the board never moves. */
+.turn-slot {
+  display: grid;
+}
+
+.turn-slot > * {
+  grid-area: 1 / 1;
+}
+
+.turn-slot > .is-hidden {
+  visibility: hidden;
+}
+
+/* Status text is one or two lines depending on the turn; always reserve two. */
+.phone-status {
+  display: flex;
+  align-items: center;
+  min-height: calc(2lh + 20px);
 }

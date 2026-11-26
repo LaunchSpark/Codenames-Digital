@@ -1,7 +1,13 @@
+/* Floats over the page, so showing or clearing it never moves anything. */
 .banner {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  translate: -50% 0;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  z-index: 40;
+  box-shadow: 0 6px 20px #0008;
   padding: 0.6rem 1rem;
   border-radius: 0.5rem;
   font-weight: 600;

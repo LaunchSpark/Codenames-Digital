@@ -57,8 +57,8 @@ describe('VS game night, end to end', () => {
       red: { giver: team('red')[0], guessers: team('red').slice(1) },
       blue: { giver: team('blue')[0], guessers: team('blue').slice(1) },
     }
-    await expect.poll(async () => (await byTeam.red.giver.page.getByLabel('Clue').count()) + (await byTeam.blue.giver.page.getByLabel('Clue').count())).toBe(1)
-    starting = (await byTeam.red.giver.page.getByLabel('Clue').count()) ? 'red' : 'blue'
+    await expect.poll(async () => (await byTeam.red.giver.page.getByRole('textbox', { name: 'Clue' }).count()) + (await byTeam.blue.giver.page.getByRole('textbox', { name: 'Clue' }).count())).toBe(1)
+    starting = (await byTeam.red.giver.page.getByRole('textbox', { name: 'Clue' }).count()) ? 'red' : 'blue'
   })
 
   it('only clue-givers see the key', async () => {
@@ -96,10 +96,10 @@ describe('VS game night, end to end', () => {
     for (const g of guessers) await card(g.page, neutral).click()
     await waitRevealed(table.tv, neutral)
     const next = byTeam[other(starting)].giver
-    await expect.poll(() => next.page.getByLabel('Clue').count()).toBe(1)
+    await expect.poll(() => next.page.getByRole('textbox', { name: 'Clue' }).count()).toBe(1)
 
     await next.page.getByRole('button', { name: 'Undo' }).click()
-    await next.page.getByRole('group', { name: 'Confirm undo' }).getByRole('button', { name: /undo/i }).click()
+    await next.page.getByRole('dialog').getByRole('button', { name: 'Yes, undo' }).click()
     await expect.poll(() => card(table.tv, neutral).getAttribute('class')).not.toContain('word--revealed')
   })
 
@@ -107,7 +107,7 @@ describe('VS game night, end to end', () => {
     const tv = table.tv
     await tv.getByRole('button', { name: 'Host menu' }).click()
     await tv.getByRole('button', { name: 'Skip turn' }).click()
-    await expect.poll(() => byTeam[other(starting)].giver.page.getByLabel('Clue').count()).toBe(1)
+    await expect.poll(() => byTeam[other(starting)].giver.page.getByRole('textbox', { name: 'Clue' }).count()).toBe(1)
 
     await tv.getByRole('button', { name: 'Undo last move' }).click()
     // Back in the starting team's guess phase: its guessers can tap again.

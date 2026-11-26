@@ -210,7 +210,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 2vw;
-  min-height: 6vw;
+  /* Fixed, not min: the big clue text must not push the board down. */
+  box-sizing: border-box;
+  height: 7vw;
   padding: 0.6vw 1.6vw;
   border-left: 0.6vw solid var(--team, var(--line));
   border-radius: 0.8vw;
@@ -219,6 +221,10 @@
 
 .tv-status__line {
   margin: 0;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 2.4vw;
   font-weight: 600;
 }
@@ -389,18 +395,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5vw;
-}
-
-.host-menu__confirm {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6vw;
-}
-
-.host-menu__confirm p {
-  flex-basis: 100%;
-  margin: 0;
 }
 
 .host-menu .chip,

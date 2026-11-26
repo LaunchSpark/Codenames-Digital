@@ -59,7 +59,9 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
           >
             Random teams
           </button>
-          {!ready && <p className="tv-lobby__need">Each team needs at least 2 players</p>}
+          <p className="tv-lobby__need" style={{ visibility: ready ? 'hidden' : 'visible' }} aria-hidden={ready}>
+            Each team needs at least 2 players
+          </p>
         </footer>
       )}
     </div>
@@ -89,7 +91,7 @@ function Roster({ team, view, host, send, disabled }: RosterProps) {
               className={`dot ${p.connected ? 'dot--on' : 'dot--off'}`}
               aria-label={p.connected ? 'connected' : 'disconnected'}
             />
-            {p.name}
+            <span className="roster__name">{p.name}</span>
             {host && (
               <button
                 type="button"

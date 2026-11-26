@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { otherTeam, TEAM_NAME } from '../components/teams'
 import type { ClientMessage, GameView, PlayerInfo, Team } from '../shared/protocol'
 
@@ -74,26 +75,19 @@ export function HostMenu({ view, send, disabled }: HostMenuProps) {
             >
               Undo last move
             </button>
-            {rewinding !== null && timeline[rewinding] !== undefined ? (
-              <div className="host-menu__confirm">
-                <p>Go back to before “{timeline[rewinding]}”?</p>
-                <button
-                  type="button"
-                  className="btn btn--danger"
-                  disabled={disabled}
-                  onClick={() => {
-                    send({ type: 'host:undo', steps: timeline.length - rewinding })
-                    setRewinding(null)
-                  }}
-                >
-                  Yes, go back
-                </button>
-                <button type="button" className="btn btn--ghost" onClick={() => setRewinding(null)}>
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              timeline.length > 0 && (
+            {rewinding !== null && timeline[rewinding] !== undefined && (
+              <ConfirmDialog
+                message={`Go back to before “${timeline[rewinding]}”?`}
+                confirmLabel="Yes, go back"
+                disabled={disabled}
+                onConfirm={() => {
+                  send({ type: 'host:undo', steps: timeline.length - rewinding })
+                  setRewinding(null)
+                }}
+                onCancel={() => setRewinding(null)}
+              />
+            )}
+            {timeline.length > 0 && (
                 <ol className="host-menu__timeline" reversed>
                   {timeline
                     .map((label, i) => ({ label, i }))
@@ -112,7 +106,6 @@ export function HostMenu({ view, send, disabled }: HostMenuProps) {
                       </li>
                     ))}
                 </ol>
-              )
             )}
           </section>
 
@@ -152,40 +145,32 @@ export function HostMenu({ view, send, disabled }: HostMenuProps) {
 
           <section className="host-menu__section">
             <h3>Remove a player</h3>
-            {removing ? (
-              <div className="host-menu__confirm">
-                <p>Remove {removing.name} from the game?</p>
-                <button
-                  type="button"
-                  className="btn btn--danger"
-                  disabled={disabled}
-                  onClick={() => {
-                    send({ type: 'host:remove-player', playerId: removing.id })
-                    setRemoving(null)
-                  }}
-                >
-                  Yes, remove
-                </button>
-                <button type="button" className="btn btn--ghost" onClick={() => setRemoving(null)}>
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <div className="host-menu__players">
-                {TEAMS.flatMap((t) => view.teams[t].players).map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    className={`chip chip--${p.team}`}
-                    aria-label={`Remove ${p.name}`}
-                    disabled={disabled}
-                    onClick={() => setRemoving(p)}
-                  >
-                    ✕ {p.name}
-                  </button>
-                ))}
-              </div>
+            {removing && (
+              <ConfirmDialog
+                message={`Remove ${removing.name} from the game?`}
+                confirmLabel="Yes, remove"
+                disabled={disabled}
+                onConfirm={() => {
+                  send({ type: 'host:remove-player', playerId: removing.id })
+                  setRemoving(null)
+                }}
+                onCancel={() => setRemoving(null)}
+              />
             )}
+            <div className="host-menu__players">
+              {TEAMS.flatMap((t) => view.teams[t].players).map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`chip chip--${p.team}`}
+                  aria-label={`Remove ${p.name}`}
+                  disabled={disabled}
+                  onClick={() => setRemoving(p)}
+                >
+                  ✕ {p.name}
+                </button>
+              ))}
+            </div>
           </section>
         </div>
       )}

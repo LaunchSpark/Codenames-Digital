@@ -110,7 +110,9 @@ describe('clue-giver', () => {
 
   it('shows what the team is doing when not giving a clue', () => {
     setup('phone-cluegiver-waiting')
-    expect(screen.queryByLabelText('Clue')).toBeNull()
+    // The clue box keeps its space (so the board doesn't jump) but is hidden and inert.
+    expect(screen.queryByRole('textbox', { name: 'Clue' })).toBeNull()
+    expect(document.querySelector('.clue-form')!.closest('[aria-hidden="true"]')).not.toBeNull()
     expect(screen.getByText('Your team is guessing: OCEAN 3')).toBeTruthy()
   })
 
@@ -118,7 +120,7 @@ describe('clue-giver', () => {
     const { send } = setup('phone-cluegiver-waiting')
     fireEvent.click(button('Undo'))
     expect(send).not.toHaveBeenCalled()
-    expect(screen.getByText('Undo last move?')).toBeTruthy()
+    expect(screen.getByRole('dialog', { name: 'Undo last move?' })).toBeTruthy()
     fireEvent.click(button('Yes, undo'))
     expect(send).toHaveBeenCalledWith({ type: 'undo' })
   })
