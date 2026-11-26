@@ -101,3 +101,33 @@
 .tv-lobby__actions button { min-height:3.5vw; height:auto; padding:.6vw 1.6vw; font-size:1.1vw; border-radius:.6vw; }
 .tv-lobby__actions button:last-child { min-width:9vw; }
 .tv-lobby__actions svg { width:1.2vw; height:1.2vw; }
+
+/* Fit an ordinary phone without scrolling (checked at 360x640 and 390x664
+   by e2e/fit.e2e.ts). Compact spacing, and on short screens the tagline and
+   footer step aside. */
+.join-screen, .phone-lobby { padding:8px 4px; gap:14px; }
+.join-screen__intro { padding:4px 2px 0; }
+.join-screen .join-screen__intro h1 { margin:8px 0 8px; font-size:clamp(26px,7.5vw,36px); }
+.join-screen__card > div { padding:16px; }
+.join-screen__title { margin:0 0 14px; font-size:20px; font-weight:650; letter-spacing:-.5px; }
+.join-screen__form { gap:16px; }
+.join-screen__field { gap:8px; }
+.join-screen__legend { margin-bottom:8px; }
+.join-team { min-height:68px; padding:10px 8px; gap:2px; }
+.join-team svg { margin-bottom:0; }
+.join-screen__note { margin:0; }
+
+.phone-lobby .lobby-welcome { gap:8px; padding:0; }
+.phone-lobby .lobby-welcome h1 { margin:0; font-size:24px; }
+.phone-lobby__rosters { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.phone-lobby .team-card__header { padding:12px; }
+.phone-lobby .team-card__header h2 { font-size:14px; gap:6px; }
+.phone-lobby .team-card__header h2 svg { width:15px; height:15px; }
+.phone-lobby .team-card > div:last-child { padding:0 12px 12px; }
+.phone-lobby__players { gap:6px; }
+.phone-lobby__players li { gap:8px; font-size:14px; }
+.phone-lobby .player-avatar { width:26px; height:26px; border-radius:6px; font-size:12px; }
+
+@media (max-height: 720px) {
+  .join-screen__intro p, .screen-footer, .lobby-welcome__icon { display:none; }
+}

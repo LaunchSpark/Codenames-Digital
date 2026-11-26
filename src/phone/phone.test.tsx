@@ -200,6 +200,27 @@ describe('guesser', () => {
   })
 })
 
+describe('scroll position', () => {
+  it('jumps to the top when the screen changes, not when the same screen updates', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const { rerender } = setup('phone-spectator-lobby')
+    scrollTo.mockClear()
+
+    rerender(game('phone-lobby')) // joined: a new screen
+    expect(scrollTo).toHaveBeenCalledWith(0, 0)
+    scrollTo.mockClear()
+
+    const lobby = game('phone-lobby')
+    lobby.view!.teams.blue.players = lobby.view!.teams.blue.players.slice(1) // someone left
+    rerender(lobby)
+    expect(scrollTo).not.toHaveBeenCalled()
+
+    rerender(game('phone-guesser-guess')) // game started
+    expect(scrollTo).toHaveBeenCalledWith(0, 0)
+    scrollTo.mockRestore()
+  })
+})
+
 describe('whose turn it is', () => {
   const dimmed = () => document.querySelector('.word-grid')!.classList.contains('word-grid--dimmed')
 

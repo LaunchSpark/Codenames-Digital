@@ -1,5 +1,4 @@
 import { Check, UsersRound } from 'lucide-react'
-import { LobbyBrand } from '../components/LobbyBrand'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader } from '../components/ui/card'
@@ -14,7 +13,6 @@ export function PhoneLobby({ view, you, send, disabled }: PhoneScreenProps) {
 
   return (
     <div className="phone-lobby">
-      <LobbyBrand />
       <header className={`lobby-welcome lobby-welcome--${you.team}`}>
         <span className="lobby-welcome__icon" aria-hidden="true"><Check /></span>
         <Badge variant="outline">You're in, {name}</Badge>

@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { UsersRound } from 'lucide-react'
-import { LobbyBrand } from '../components/LobbyBrand'
 import { Button } from '../components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
+import { Card, CardContent } from '../components/ui/card'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { TEAM_NAME } from '../components/teams'
@@ -29,19 +28,12 @@ export function JoinForm({ view, send, disabled }: JoinFormProps) {
   }
 
   return (
+    // Everything sits at the top, so the Join buttons stay above the keyboard
+    // that opens while you type your name.
     <div className="join-screen">
-      <LobbyBrand />
-      <header className="join-screen__intro">
-        <span className="lobby-eyebrow">A GAME OF WORDS & INSTINCT</span>
-        <h1>Good clues.<br /><span>Great company.</span></h1>
-        <p>Pick a name. Choose a side.</p>
-      </header>
       <Card className="join-screen__card">
-        <CardHeader>
-          <CardTitle className="text-xl">Join the table</CardTitle>
-          <CardDescription>Choose a name everyone will recognize.</CardDescription>
-        </CardHeader>
         <CardContent>
+          <h1 className="join-screen__title">Join Codenames</h1>
           <form className="join-screen__form" onSubmit={(e) => e.preventDefault()}>
             <div className="join-screen__field">
               <Label htmlFor="player-name">Your name</Label>
@@ -51,7 +43,7 @@ export function JoinForm({ view, send, disabled }: JoinFormProps) {
             </div>
             {midGame && <p className="join-screen__note">Game in progress &mdash; you'll join as a guesser</p>}
             <fieldset>
-              <legend className="join-screen__legend">Choose your team</legend>
+              <legend className="sr-only">Choose your team</legend>
               <div className="join-screen__teams">
                 {(['red', 'blue'] as Team[]).map((t) => (
                   <Button key={t} type="button" variant="outline"
@@ -68,7 +60,6 @@ export function JoinForm({ view, send, disabled }: JoinFormProps) {
           </form>
         </CardContent>
       </Card>
-      <p className="screen-footer">One phone per player. One screen for the table.</p>
     </div>
   )
 }
