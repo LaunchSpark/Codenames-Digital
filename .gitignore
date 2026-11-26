@@ -181,3 +181,6 @@ cython_debug/
 .cursorindexingignore
 # Node
 node_modules/
+
+# Application utilities are source, not a Python build directory.
+!src/lib/

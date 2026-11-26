@@ -1,4 +1,6 @@
-/* The TV is a 16:9 screen read from across a room: size in vw, keep it big. */
+/* The TV is a 16:9 screen read from across a room: size in vw, keep it big.
+   Same look as the lobby (src/components/lobby.css): near-black background,
+   bordered cards, team colours as tints. */
 
 .tv {
   display: flex;
@@ -19,181 +21,37 @@
 .tv-waiting {
   display: grid;
   place-items: center;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 2vw;
 }
 
 .tv-title {
   font-size: 4.2vw;
-  letter-spacing: -0.03em;
+  font-weight: 650;
+  letter-spacing: -0.04em;
 }
 
 .tv .btn--huge {
-  padding: 1vw 2.6vw;
-  border-radius: 0.8vw;
-  font-size: 1.8vw;
+  min-height: 3.5vw;
+  padding: 0.6vw 2vw;
+  border-radius: 0.6vw;
+  font-size: 1.3vw;
 }
 
-/* Lobby ------------------------------------------------------------------ */
+/* Team colour hooks used across TV screens. */
+.team-red,
+.roster--red { --team: var(--card-red); --team-text: var(--text-red); --team-tint: var(--tint-red); --team-line: var(--line-red); }
+.team-blue,
+.roster--blue { --team: var(--card-blue); --team-text: var(--text-blue); --team-tint: var(--tint-blue); --team-line: var(--line-blue); }
 
-.tv-lobby {
-  display: grid;
-  grid-template-columns: 30vw 1fr;
-  grid-template-rows: auto 1fr auto;
-  gap: 2vw 3vw;
-}
-
-.tv-lobby__head {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.mode-picker {
-  display: flex;
-  gap: 0.8vw;
-}
-
-.mode {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 10vw;
-  padding: 0.8vw 1.6vw;
-  border: 2px solid var(--line);
-  border-radius: 0.8vw;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 1.8vw;
-  font-weight: 700;
-}
-
-.mode[aria-pressed='true'] {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-.mode:disabled {
-  color: var(--muted);
-  opacity: 0.6;
-}
-
-.mode__soon {
-  font-size: 0.9vw;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.tv-lobby__join {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2vw;
-  border-radius: 1.2vw;
-  background: var(--panel);
-  text-align: center;
-}
-
-.tv-lobby__qr {
-  width: 100%;
-  max-width: 24vw;
-  aspect-ratio: 1;
-  border-radius: 0.8vw;
-  image-rendering: pixelated;
-}
-
-.tv-lobby__hint {
-  margin: 1.4vw 0 0.2vw;
-  color: var(--muted);
-}
-
-.tv-lobby__url {
-  margin: 0;
-  font-size: 1.9vw;
-  font-weight: 700;
-  word-break: break-all;
-}
-
-.tv-lobby__teams {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2vw;
-  min-height: 0;
-}
-
-.roster {
-  padding: 1.6vw 2vw;
-  border-top: 0.5vw solid var(--team);
-  border-radius: 1.2vw;
-  background: var(--panel);
-  overflow: hidden;
-}
-
-.roster--red { --team: var(--card-red); --team-text: var(--text-red); }
-.roster--blue { --team: var(--card-blue); --team-text: var(--text-blue); }
-
-.roster__title {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin: 0 0 1vw;
-  color: var(--team-text);
-  font-size: 2.6vw;
-}
-
-.roster__count {
-  color: var(--muted);
-  font-size: 1.6vw;
-  font-variant-numeric: tabular-nums;
-}
-
-.roster__list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5vw;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 2vw;
-  font-weight: 600;
-}
-
-.roster__list li {
-  display: flex;
-  align-items: center;
-  gap: 0.8vw;
-}
-
-.roster__list li.is-away {
-  color: var(--muted);
-}
-
-.dot {
-  flex: none;
-  width: 0.8vw;
-  height: 0.8vw;
-  border-radius: 50%;
-}
-
-.dot--on { background: #3fcf6d; }
-.dot--off { border: 2px solid var(--muted); }
-
-.tv-lobby__start {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.6vw;
-}
-
-.tv-lobby__need {
-  margin: 0;
-  color: var(--muted);
-  font-size: 1.5vw;
+/* A bordered card surface, tinted by team when inside .team-*. */
+.tv-status,
+.tv-remaining__team,
+.tv-clues,
+.tv-side__join {
+  border: 1px solid var(--team-line, var(--line));
+  border-radius: 1vw;
+  background: linear-gradient(160deg, var(--team-tint, var(--panel)), var(--panel) 55%);
 }
 
 /* Board ------------------------------------------------------------------ */
@@ -210,30 +68,39 @@
   align-items: center;
   justify-content: space-between;
   gap: 2vw;
-  min-height: 6vw;
-  padding: 0.6vw 1.6vw;
-  border-left: 0.6vw solid var(--team, var(--line));
-  border-radius: 0.8vw;
-  background: var(--panel);
+  /* Fixed, not min: the big clue text must not push the board down. */
+  box-sizing: border-box;
+  height: 7vw;
+  padding: 0.6vw 1.8vw;
+  background: linear-gradient(90deg, var(--team-tint, var(--panel)), var(--panel) 60%);
 }
 
 .tv-status__line {
   margin: 0;
-  font-size: 2.4vw;
-  font-weight: 600;
+  /* Room for descenders (the g in "thinking"): overflow is hidden so long
+     clues truncate instead of wrapping, which would clip a tighter line. */
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 2.2vw;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 .tv-status__clue {
-  font-size: 4vw;
-  letter-spacing: 0.02em;
+  color: var(--team-text, var(--text));
+  font-size: 3.8vw;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 .tv-status__end {
   display: flex;
   align-items: center;
   gap: 0.8vw;
-  color: var(--muted);
-  font-size: 1.6vw;
+  color: var(--text-muted);
+  font-size: 1.4vw;
   white-space: nowrap;
   --pip-size: 1.1vw;
   --pip-gap: 0.4vw;
@@ -273,46 +140,46 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.8vw;
-  border-radius: 0.8vw;
-  background: var(--team);
-  color: #fff;
-  font-weight: 600;
+  padding: 0.9vw 0.8vw;
+  color: var(--team-text);
+  font-size: 1vw;
+  font-weight: 500;
 }
 
 .tv-remaining__n {
   font-size: 3.6vw;
-  font-weight: 800;
+  font-weight: 650;
   line-height: 1;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
 
 .tv-clues {
   flex: 1;
   min-height: 0;
-  padding: 1vw 1.2vw;
-  border-radius: 0.8vw;
-  background: var(--panel);
+  padding: 1.2vw 1.4vw;
   overflow: hidden;
 }
 
+/* Small spaced caps, like the lobby's eyebrows. */
 .tv-clues h2 {
-  margin: 0 0 0.6vw;
-  color: var(--muted);
-  font-size: 1vw;
+  margin: 0 0 0.8vw;
+  color: var(--text-muted);
+  font-size: 0.75vw;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.2vw;
 }
 
 .tv-clues ol {
   display: flex;
   flex-direction: column;
-  gap: 0.4vw;
+  gap: 0.5vw;
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 1.8vw;
-  font-weight: 700;
+  font-size: 1.7vw;
+  font-weight: 600;
 }
 
 .tv-clues li {
@@ -324,28 +191,27 @@
 }
 
 .tv-clues li:not(:first-child) {
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .tv-side__join {
   display: flex;
   align-items: center;
   gap: 0.8vw;
-  color: var(--muted);
-  font-size: 0.9vw;
+  padding: 0.6vw;
+  color: var(--text-muted);
+  font-size: 0.85vw;
   word-break: break-all;
 }
 
 .tv-side__qr {
   flex: none;
-  width: 6vw;
-  border-radius: 0.3vw;
+  width: 5.5vw;
+  padding: 0.25vw;
+  border-radius: 0.4vw;
+  background: #fff;
   image-rendering: pixelated;
 }
-
-/* Team colour hooks used across TV screens. */
-.team-red { --team: var(--card-red); --team-text: var(--text-red); }
-.team-blue { --team: var(--card-blue); --team-text: var(--text-blue); }
 
 /* Host menu -------------------------------------------------------------- */
 
@@ -367,22 +233,29 @@
   flex-direction: column;
   gap: 1.2vw;
   width: 34vw;
+  max-height: calc(100vh - 8vw);
   padding: 1.4vw;
+  overflow-y: auto;
   border: 1px solid var(--line);
   border-radius: 1vw;
-  background: #262a32;
-  box-shadow: 0 1vw 3vw #0009;
+  background: var(--panel);
+  box-shadow: 0 1vw 3vw #000a;
 }
 
 .host-menu__section h3 {
   margin: 0 0 0.6vw;
-  color: var(--team-text, var(--muted));
-  font-size: 1.1vw;
+  color: var(--team-text, var(--text-muted));
+  font-size: 0.75vw;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15vw;
 }
 
 .host-menu__prompt {
-  font-size: 1.6vw !important;
+  font-size: 1.4vw !important;
   color: var(--text) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
 }
 
 .host-menu__players {
@@ -391,21 +264,40 @@
   gap: 0.5vw;
 }
 
-.host-menu__confirm {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6vw;
-}
-
-.host-menu__confirm p {
-  flex-basis: 100%;
-  margin: 0;
-}
-
 .host-menu .chip,
 .host-menu .btn {
   font-size: 1vw;
+}
+
+/* Host undo: recent moves, newest first; tap one to rewind to just before it. */
+.host-menu__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2vw;
+  max-height: 14vw;
+  margin: 0.6vw 0 0;
+  padding: 0 0 0 2vw;
+  overflow-y: auto;
+  list-style: decimal;
+  font-size: 0.95vw;
+  color: var(--text-muted);
+}
+
+.host-menu__move {
+  width: 100%;
+  padding: 0.3vw 0.5vw;
+  border: 0;
+  border-radius: 0.4vw;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.host-menu__move:hover,
+.host-menu__move:focus-visible {
+  background: var(--hover);
 }
 
 /* Game over -------------------------------------------------------------- */
@@ -420,6 +312,7 @@
   display: flex;
   align-items: baseline;
   gap: 2vw;
+  padding: 0.4vw 0.4vw 0;
 }
 
 .tv-over__head .tv-title {
@@ -428,12 +321,14 @@
 
 .tv-over__why {
   margin: 0;
-  color: var(--muted);
-  font-size: 2.2vw;
+  color: var(--text-muted);
+  font-size: 1.8vw;
 }
 
 .tv-over__actions {
   display: flex;
-  justify-content: center;
-  gap: 1.6vw;
+  justify-content: flex-end;
+  gap: 0.7vw;
+  padding-top: 1.2vw;
+  border-top: 1px solid var(--line);
 }

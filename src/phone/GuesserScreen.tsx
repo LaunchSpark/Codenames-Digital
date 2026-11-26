@@ -19,7 +19,7 @@ export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
   }
 
   return (
-    <div className="phone-game">
+    <div className={`phone-game team-${you.team}`}>
       <header className="phone-head">
         <h1 className={`team-text-${you.team}`}>{TEAM_NAME[you.team]} guesser</h1>
       </header>
@@ -35,6 +35,7 @@ export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
           onTap={myGuess ? (card) => send({ type: 'vote', card }) : undefined}
           disabled={disabled}
           variant="phone"
+          dimmed={!myGuess}
         />
       )}
 

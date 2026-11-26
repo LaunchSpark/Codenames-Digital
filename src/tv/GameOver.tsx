@@ -37,6 +37,14 @@ export function GameOver({ view, you, send, disabled }: TvScreenProps) {
           >
             Back to lobby
           </button>
+          <button
+            type="button"
+            className="btn btn--ghost btn--huge"
+            disabled={disabled || !view.timeline?.length}
+            onClick={() => send({ type: 'host:undo', steps: 1 })}
+          >
+            Undo last move
+          </button>
         </footer>
       )}
     </div>

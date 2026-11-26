@@ -114,6 +114,7 @@ function lobbyView(): GameView {
     voterCount: 0,
     endTurnVotes: 0,
     canUndo: false,
+    timeline: null,
     joinUrl: JOIN_URL,
   }
 }
@@ -127,6 +128,8 @@ interface GameOpts {
   votes?: Record<number, number>
   endTurnVotes?: number
   clueGivers?: Partial<Record<Team, string | null>>
+  /** Host TV only. */
+  timeline?: string[] | null
 }
 
 function gameView(opts: GameOpts): GameView {
@@ -157,6 +160,7 @@ function gameView(opts: GameOpts): GameView {
       : 0,
     endTurnVotes: opts.endTurnVotes ?? 0,
     canUndo: opts.revealed.length > 0 || opts.clues.length > 0,
+    timeline: opts.timeline ?? null,
     joinUrl: JOIN_URL,
   }
 }

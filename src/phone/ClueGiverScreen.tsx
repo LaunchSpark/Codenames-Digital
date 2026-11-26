@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { Undo2 } from 'lucide-react'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { WordGrid } from '../components/WordGrid'
 import { guessesLeftText, TEAM_NAME } from '../components/teams'
-import type { ClientMessage, Phase, Team } from '../shared/protocol'
+import type { CardView, ClientMessage, Phase, Team } from '../shared/protocol'
 import type { PhoneScreenProps } from './types'
 
 export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps) {
@@ -9,17 +11,25 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
   const myClueTurn = phase.name === 'clue' && phase.team === you.team
 
   return (
-    <div className="phone-game">
+    <div className={`phone-game team-${you.team}`}>
       <header className="phone-head">
         <h1 className={`team-text-${you.team}`}>{TEAM_NAME[you.team]} clue-giver</h1>
         <UndoButton canUndo={view.canUndo} disabled={disabled} send={send} />
       </header>
 
-      {myClueTurn ? (
-        <ClueForm send={send} disabled={disabled} />
-      ) : (
-        <p className="phone-status">{statusLine(phase, you.team)}</p>
-      )}
+      {/*
+        The clue box and the status line share one slot, sized to the larger,
+        so the board never jumps when the turn changes. The clue box is reset
+        for each new clue (keyed on the clue count).
+      */}
+      <div className="turn-slot">
+        <div aria-hidden={!myClueTurn} inert={!myClueTurn} className={myClueTurn ? '' : 'is-hidden'}>
+          <ClueForm key={view.clues.length} send={send} disabled={disabled || !myClueTurn} />
+        </div>
+        <p className={`phone-status${myClueTurn ? ' is-hidden' : ''}`} aria-hidden={myClueTurn}>
+          {statusLine(phase, you.team)}
+        </p>
+      </div>
 
       {view.board && (
         <WordGrid
@@ -27,9 +37,34 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
           showPips={phase.name === 'guess'}
           voterCount={view.voterCount}
           variant="phone"
+          dimmed={!myClueTurn}
+          keyCard
         />
       )}
+
+      {view.board && <MyWords cards={view.board} team={you.team} />}
     </div>
+  )
+}
+
+/**
+ * The team's words still to be found, for planning the next clue. Below the
+ * board, so it can shrink as cards are picked without moving anything above.
+ */
+function MyWords({ cards, team }: { cards: CardView[]; team: Team }) {
+  const words = cards.filter((c) => c.color === team && !c.revealed).map((c) => c.word)
+  return (
+    <section className="my-words">
+      <header className="my-words__head">
+        <h2>Your words</h2>
+        <span>{words.length} left</span>
+      </header>
+      <ul className="my-words__list" aria-label="Your words">
+        {words.map((w) => (
+          <li key={w}>{w}</li>
+        ))}
+      </ul>
+    </section>
   )
 }
 
@@ -44,7 +79,7 @@ function statusLine(phase: Phase, mine: Team) {
   return ''
 }
 
-/** Lives only during this team's clue phase, so a new turn starts blank. */
+/** Remounted for each new clue, so every turn starts blank. */
 function ClueForm({ send, disabled }: { send: (m: ClientMessage) => void; disabled: boolean }) {
   const [word, setWord] = useState('')
   const [number, setNumber] = useState(1)
@@ -100,36 +135,29 @@ function UndoButton({
 }) {
   const [confirming, setConfirming] = useState(false)
 
-  if (confirming && canUndo) {
-    return (
-      <div className="undo-confirm" role="group" aria-label="Confirm undo">
-        <span>Undo last move?</span>
-        <button
-          type="button"
-          className="btn btn--danger btn--small"
+  return (
+    <>
+      <button
+        type="button"
+        className="btn btn--ghost"
+        disabled={disabled || !canUndo}
+        onClick={() => setConfirming(true)}
+      >
+        <Undo2 aria-hidden="true" size={18} />
+        Undo
+      </button>
+      {confirming && canUndo && (
+        <ConfirmDialog
+          message="Undo last move?"
+          confirmLabel="Yes, undo"
           disabled={disabled}
-          onClick={() => {
+          onConfirm={() => {
             send({ type: 'undo' })
             setConfirming(false)
           }}
-        >
-          Yes, undo
-        </button>
-        <button type="button" className="btn btn--ghost btn--small" onClick={() => setConfirming(false)}>
-          Cancel
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      className="btn btn--ghost"
-      disabled={disabled || !canUndo}
-      onClick={() => setConfirming(true)}
-    >
-      Undo
-    </button>
+          onCancel={() => setConfirming(false)}
+        />
+      )}
+    </>
   )
 }

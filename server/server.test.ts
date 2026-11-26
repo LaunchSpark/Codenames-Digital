@@ -202,3 +202,25 @@ describe('game server', () => {
     expect(await c.waitFor((m) => m.type === 'error')).toMatchObject({ code: 'bad-message' })
   })
 })
+
+describe('static files', () => {
+  it('survives the client being rebuilt underneath it', async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const { tmpdir } = await import('node:os')
+    const dir = mkdtempSync(join(tmpdir(), 'codenames-static-'))
+    writeFileSync(join(dir, 'index.html'), '<!doctype html><p>app</p>')
+    writeFileSync(join(dir, 'old.css'), 'p{}')
+    server = await startServer({ port: 0, joinUrl: 'http://test/', staticDir: dir })
+    const url = (p: string) => `http://127.0.0.1:${server.port}/${p}`
+
+    expect((await fetch(url('old.css'))).status).toBe(200)
+    rmSync(join(dir, 'old.css')) // a rebuild replaces hashed assets
+    writeFileSync(join(dir, 'new.css'), 'p{}')
+
+    expect((await fetch(url('old.css'))).status).toBe(404)
+    expect((await fetch(url('new.css'))).status).toBe(200)
+    expect(await (await fetch(url('tv'))).text()).toContain('app')
+    rmSync(dir, { recursive: true, force: true })
+  })
+})

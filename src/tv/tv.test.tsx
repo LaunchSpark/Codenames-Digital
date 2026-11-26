@@ -45,7 +45,17 @@ describe('Lobby', () => {
     const { view, you } = fixture('tv-lobby')
     renderLobby(view, you)
     const red = screen.getByRole('list', { name: 'Red team' })
-    expect(within(red).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Ana', 'Ben', 'Cara'])
+    expect(within(red).getAllByRole('listitem').map((li, i) => within(li).getByText(view.teams.red.players[i].name, { exact: true }).textContent)).toEqual(['Ana', 'Ben', 'Cara'])
+  })
+
+  it('says in words when a player is away', () => {
+    const { view, you } = fixture('tv-lobby')
+    renderLobby(view, you)
+    const blue = screen.getByRole('list', { name: 'Blue team' })
+    const eli = within(blue).getByText('Eli', { exact: true }).closest('li')!
+    expect(within(eli).getByText('away')).toBeTruthy()
+    const dev = within(blue).getByText('Dev', { exact: true }).closest('li')!
+    expect(within(dev).queryByText('away')).toBeNull()
   })
 
   it('start is host-only', () => {
@@ -60,6 +70,27 @@ describe('Lobby', () => {
     expect(start.disabled).toBe(false)
     fireEvent.click(start)
     expect(send).toHaveBeenCalledWith({ type: 'host:start' })
+  })
+
+  it('host can move a lobby player to the other team', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    const send = renderLobby(view, you)
+    fireEvent.click(screen.getByRole('button', { name: 'Move Ben to Blue' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:move-player', playerId: 'p2', team: 'blue' })
+  })
+
+  it('host can shuffle teams', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    const send = renderLobby(view, you)
+    fireEvent.click(screen.getByRole('button', { name: 'Random teams' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:shuffle-teams' })
+  })
+
+  it('team tools are host-only', () => {
+    const { view, you } = fixture('tv-lobby')
+    renderLobby(view, you)
+    expect(screen.queryByRole('button', { name: 'Random teams' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Move Ben to Blue' })).toBeNull()
   })
 
   it('start is disabled when a team has fewer than 2 players', () => {
@@ -127,7 +158,7 @@ describe('BoardScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove Ben' }))
     expect(send).not.toHaveBeenCalled()
-    expect(screen.getByText('Remove Ben from the game?')).toBeTruthy()
+    expect(screen.getByRole('dialog', { name: 'Remove Ben from the game?' })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Yes, remove' }))
     expect(send).toHaveBeenCalledWith({ type: 'host:remove-player', playerId: 'p2' })
   })
@@ -147,6 +178,45 @@ describe('BoardScreen', () => {
     expect(screen.queryByText('Pick a new clue-giver for Red')).toBeNull()
   })
 
+  it('host undo jumps back to a chosen move after confirming', () => {
+    const { view, you } = fixture('tv-guess-host')
+    view.timeline = ['Red clue: OCEAN 2', 'Red revealed APPLE (red)']
+    const send = vi.fn()
+    render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Go back to before: Red clue: OCEAN 2' }))
+    expect(send).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog', { name: 'Go back to before “Red clue: OCEAN 2”?' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, go back' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:undo', steps: 2 })
+  })
+
+  it('host undo last steps back one move, and is off with nothing to undo', () => {
+    const { view, you } = fixture('tv-guess-host')
+    view.timeline = ['Red clue: OCEAN 2']
+    const send = vi.fn()
+    const { unmount } = render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Undo last move' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:undo', steps: 1 })
+    unmount()
+
+    view.timeline = []
+    render(<BoardScreen view={view} you={you} send={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    expect((screen.getByRole('button', { name: 'Undo last move' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('host menu moves a guesser mid-game, but not a clue-giver', () => {
+    const { view, you } = fixture('tv-guess-host')
+    const send = vi.fn()
+    render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Move Ben to Blue' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:move-player', playerId: 'p2', team: 'blue' })
+    expect((screen.getByRole('button', { name: 'Move Ana to Blue' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
   it('disabled turns host actions off', () => {
     const { view, you } = fixture('tv-needs-clue-giver')
     render(<BoardScreen view={view} you={you} send={vi.fn()} disabled />)
@@ -164,6 +234,15 @@ describe('GameOver', () => {
     fireEvent.click(screen.getByRole('button', { name: 'New game' }))
     fireEvent.click(screen.getByRole('button', { name: 'Back to lobby' }))
     expect(send.mock.calls).toEqual([[{ type: 'host:new-game' }], [{ type: 'host:lobby' }]])
+  })
+
+  it('lets the host undo the game-ending move', () => {
+    const { view } = fixture('tv-over')
+    view.timeline = ['Red clue: OCEAN 3', 'Red revealed CENTAUR (assassin) — Blue wins']
+    const send = vi.fn()
+    render(<GameOver view={view} you={{ kind: 'tv', host: true }} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Undo last move' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:undo', steps: 1 })
   })
 
   it('hides host controls from a non-host TV', () => {

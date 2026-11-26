@@ -25,6 +25,30 @@ describe('WordGrid', () => {
     expect(getByText('PEAR')).toBeTruthy()
   })
 
+  it('dims the whole board when asked, and only then', () => {
+    const dim = render(<WordGrid cards={[card()]} showPips={false} voterCount={0} variant="phone" dimmed />)
+    expect(dim.container.querySelector('.word-grid--dimmed')).not.toBeNull()
+    cleanup()
+    const lit = render(<WordGrid cards={[card()]} showPips={false} voterCount={0} variant="phone" />)
+    expect(lit.container.querySelector('.word-grid--dimmed')).toBeNull()
+  })
+
+  it('as a key card, shows colours without visible words but keeps them for screen readers', () => {
+    const { container, queryByText, getByLabelText } = render(
+      <WordGrid
+        cards={[card({ word: 'APPLE', color: 'red' }), card({ word: 'PEAR', color: 'neutral', revealed: true })]}
+        showPips={false}
+        voterCount={0}
+        variant="phone"
+        keyCard
+      />,
+    )
+    expect(container.querySelector('.word-grid--key')).not.toBeNull()
+    expect(queryByText('APPLE')).toBeNull()
+    expect(getByLabelText('APPLE: red')).toBeTruthy()
+    expect(getByLabelText('PEAR: neutral, picked')).toBeTruthy()
+  })
+
   it('shows 3 pip slots with 2 filled', () => {
     const { container } = render(
       <WordGrid cards={[card({ votes: 2 })]} showPips voterCount={3} variant="tv" />,

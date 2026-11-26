@@ -27,7 +27,9 @@ export async function startServer(opts: ServerOptions): Promise<{ port: number; 
     ...opts.ctx,
   }
   const hub = createHub({ joinUrl: opts.joinUrl, ctx })
-  const serve = opts.staticDir ? sirv(opts.staticDir, { single: true }) : null
+  // dev: look files up per request instead of caching the list at startup, so
+  // rebuilding dist/ while hosting can't make a request hit a vanished file.
+  const serve = opts.staticDir ? sirv(opts.staticDir, { single: true, dev: true }) : null
 
   const server = createServer((req, res) => {
     const notFound = () => {

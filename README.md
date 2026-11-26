@@ -46,10 +46,37 @@ npm run dev          # Vite on :5173, proxies /ws to the server
 Open `http://localhost:5173/tv` on the laptop; phones use the printed
 `http://<laptop-ip>:5173/` address.
 
+### Windows: "Cannot find native binding"
+
+Some npm versions (seen with npm 10.5) skip the platform-specific packages that
+Vite, oxlint and Tailwind need, so `npm run build` fails with *Cannot find
+native binding*. Upgrading npm (`npm i -g npm@latest`) is the real fix. To get
+going without it, install the Windows bindings that match the versions in
+`node_modules`:
+
+```sh
+npm i --no-save @rolldown/binding-win32-x64-msvc@1.2.7 @oxlint/binding-win32-x64-msvc@1.81.0   @tailwindcss/oxide-win32-x64-msvc@4.3.5 lightningcss-win32-x64-msvc@1.33.0
+```
+
+### Playtesting without a pile of phones
+
+```sh
+npm run playtest                     # TV + 4 phone windows, everyone joined, game started
+npm run playtest -- --phones 6       # 2–10 phones
+npm run playtest -- --no-auto        # leave the join screens for you
+npm run playtest -- --phones-at 0,0  # where the phone row starts (default: a second screen at x=1920)
+```
+
+Each window is its own Chromium (via Playwright), so each phone keeps its own seat.
+Phones use the LAN address and the TV uses localhost, so only the TV gets host
+controls — same as a real game night. Ctrl+C or closing the TV window ends it.
+First time only: `npx playwright install chromium`.
+
 ```sh
 npm test        # Vitest
 npm run lint    # oxlint
 npm run build   # type-check (client + server) and build the client
+npm run e2e     # headless end-to-end check: real server, TV + 6 phones
 ```
 
 ### Layout

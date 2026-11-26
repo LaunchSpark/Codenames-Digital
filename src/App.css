@@ -1,28 +1,40 @@
+/* Shared tokens. Surfaces and text come from the shadcn theme in index.css,
+   so every screen — lobby or in game — shares one palette. */
 :root {
-  --bg: #14161a;
-  --panel: #1d2026;
-  --line: #2e333c;
-  --text: #eceef2;
-  --muted: #939aa8;
-  --accent: #4f8cff;
+  --bg: hsl(var(--background));
+  --panel: hsl(var(--card));
+  --line: hsl(var(--border));
+  --text: hsl(var(--foreground));
+  --text-muted: hsl(var(--muted-foreground));
+  --hover: hsl(var(--accent));
 
-  --card-red: #c0392b;
-  --card-blue: #2c6fbb;
-  --card-neutral: #d8bf8e;
-  --card-assassin: #0b0c0e;
-  --card-unknown: #e9e4d8;
+  /* Teams, as in the lobby: text on dark, a tint for surfaces, a border. */
+  --text-red: #fda4af;
+  --text-blue: #93c5fd;
+  --tint-red: #301416;
+  --tint-blue: #111f36;
+  --line-red: #582126;
+  --line-blue: #213b60;
 
-  /* Team colours that read as text on the dark background. */
-  --text-red: #ff7a6b;
-  --text-blue: #6eaaff;
+  /* Board cards. Solid colours mark picked cards (and the clue-giver's key). */
+  --card-red: #c0283f;
+  --card-blue: #2563c9;
+  --card-neutral: #8a7f6c;
+  --card-assassin: #050506;
+  --card-unknown: #1b1b20;
+  --card-unknown-line: #2c2c33;
 }
+
+.team-red,
+.roster--red { --team: var(--card-red); --team-text: var(--text-red); --team-tint: var(--tint-red); --team-line: var(--line-red); }
+.team-blue,
+.roster--blue { --team: var(--card-blue); --team-text: var(--text-blue); --team-tint: var(--tint-blue); --team-line: var(--line-blue); }
 
 .app {
   min-height: 100vh;
   padding: 1.5rem;
   background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 h1 {
@@ -31,80 +43,90 @@ h1 {
   letter-spacing: -0.02em;
 }
 
-/* Buttons ---------------------------------------------------------------- */
+/* Buttons: the shadcn Button look, for screens not yet on <Button>. ------- */
 
 .btn {
-  padding: 0.8rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.6rem 1rem;
   border: 1px solid transparent;
-  border-radius: 0.6rem;
+  border-radius: 8px;
   font: inherit;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px hsl(var(--ring));
 }
 
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* Like shadcn's default variant: light on dark. */
 .btn--primary {
-  background: var(--accent);
-  color: #fff;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 }
 
 .btn--primary:not(:disabled):hover {
-  filter: brightness(1.1);
+  background: hsl(var(--primary) / 0.9);
 }
 
-.btn--red {
-  background: var(--card-red);
-  color: #fff;
-}
-
-.btn--blue {
-  background: var(--card-blue);
-  color: #fff;
-}
-
+/* Like shadcn's outline variant. */
 .btn--ghost {
-  padding: 0.4rem 0.7rem;
-  border-color: var(--line);
+  border-color: hsl(var(--input));
   background: transparent;
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.btn--ghost:not(:disabled):hover {
   color: var(--text);
 }
 
-.btn--danger {
-  background: #b3261e;
-  color: #fff;
+.btn--ghost:not(:disabled):hover {
+  background: var(--hover);
 }
 
+.btn--danger {
+  background: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
+
+.btn--danger:not(:disabled):hover {
+  background: hsl(var(--destructive) / 0.9);
+}
+
+/* Chips: small outline buttons; pressed = the secondary fill. */
 .chip {
-  padding: 0.45rem 0.8rem;
-  border: 1px solid var(--line);
-  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid hsl(var(--input));
+  border-radius: 6px;
   background: transparent;
   color: var(--text);
   font: inherit;
   font-size: 0.9rem;
   cursor: pointer;
+  transition: background-color 150ms, border-color 150ms;
+}
+
+.chip:not(:disabled):hover {
+  background: var(--hover);
 }
 
 .chip:disabled {
   cursor: default;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .chip[aria-pressed='true'] {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: hsl(var(--ring));
+  background: hsl(var(--secondary));
   opacity: 1;
 }
 
-.chip--red { border-color: color-mix(in srgb, var(--card-red) 60%, var(--line)); }
-.chip--blue { border-color: color-mix(in srgb, var(--card-blue) 60%, var(--line)); }
+.chip--red { border-color: var(--line-red); color: var(--text-red); }
+.chip--blue { border-color: var(--line-blue); color: var(--text-blue); }

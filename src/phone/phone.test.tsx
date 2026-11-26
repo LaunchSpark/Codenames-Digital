@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Snapshot } from '../net/connection'
 import { FIXTURES, type FixtureName } from '../net/fixtures'
@@ -84,6 +84,34 @@ describe('clue-giver', () => {
     expect(container.querySelectorAll('.word--unknown')).toHaveLength(0)
   })
 
+  it('sees a colour-only key card, while guessers see words', () => {
+    const { container } = setup('phone-cluegiver-clue')
+    expect(container.querySelector('.word-grid--key')).not.toBeNull()
+    cleanup()
+    const guesser = setup('phone-guesser-guess')
+    expect(guesser.container.querySelector('.word-grid--key')).toBeNull()
+  })
+
+  it("lists the team's words that haven't been picked yet", () => {
+    const g = game('phone-cluegiver-waiting')
+    render(<PhoneScreen game={g} send={vi.fn()} />)
+    const board = g.view!.board!
+    const mine = board.filter((c) => c.color === 'red' && !c.revealed).map((c) => c.word)
+    const pickedMine = board.filter((c) => c.color === 'red' && c.revealed).map((c) => c.word)
+    const theirs = board.filter((c) => c.color === 'blue').map((c) => c.word)
+    expect(pickedMine.length).toBeGreaterThan(0) // the fixture has some picked already
+
+    const list = screen.getByRole('list', { name: 'Your words' })
+    expect(within(list).getAllByRole('listitem').map((li) => li.textContent)).toEqual(mine)
+    expect(screen.getByText(`${mine.length} left`)).toBeTruthy()
+    for (const w of [...pickedMine, ...theirs]) expect(within(list).queryByText(w)).toBeNull()
+  })
+
+  it('guessers get no word list', () => {
+    setup('phone-guesser-guess')
+    expect(screen.queryByRole('list', { name: 'Your words' })).toBeNull()
+  })
+
   it('clue form sends word and number', () => {
     const { send } = setup('phone-cluegiver-clue')
     expect(button('Give clue').disabled).toBe(true)
@@ -110,7 +138,9 @@ describe('clue-giver', () => {
 
   it('shows what the team is doing when not giving a clue', () => {
     setup('phone-cluegiver-waiting')
-    expect(screen.queryByLabelText('Clue')).toBeNull()
+    // The clue box keeps its space (so the board doesn't jump) but is hidden and inert.
+    expect(screen.queryByRole('textbox', { name: 'Clue' })).toBeNull()
+    expect(document.querySelector('.clue-form')!.closest('[aria-hidden="true"]')).not.toBeNull()
     expect(screen.getByText('Your team is guessing: OCEAN 3')).toBeTruthy()
   })
 
@@ -118,7 +148,7 @@ describe('clue-giver', () => {
     const { send } = setup('phone-cluegiver-waiting')
     fireEvent.click(button('Undo'))
     expect(send).not.toHaveBeenCalled()
-    expect(screen.getByText('Undo last move?')).toBeTruthy()
+    expect(screen.getByRole('dialog', { name: 'Undo last move?' })).toBeTruthy()
     fireEvent.click(button('Yes, undo'))
     expect(send).toHaveBeenCalledWith({ type: 'undo' })
   })
@@ -167,6 +197,26 @@ describe('guesser', () => {
     if (g.you!.kind === 'player') g.you!.vote = 'end'
     render(<PhoneScreen game={g} send={vi.fn()} />)
     expect(button(/End turn/).getAttribute('aria-pressed')).toBe('true')
+  })
+})
+
+describe('whose turn it is', () => {
+  const dimmed = () => document.querySelector('.word-grid')!.classList.contains('word-grid--dimmed')
+
+  it("a guesser's board is lit only while their team is guessing", () => {
+    setup('phone-guesser-guess')
+    expect(dimmed()).toBe(false)
+    cleanup()
+    setup('phone-guesser-waiting')
+    expect(dimmed()).toBe(true)
+  })
+
+  it("a clue-giver's board is lit only while they give the clue", () => {
+    setup('phone-cluegiver-clue')
+    expect(dimmed()).toBe(false)
+    cleanup()
+    setup('phone-cluegiver-waiting')
+    expect(dimmed()).toBe(true)
   })
 })
 
