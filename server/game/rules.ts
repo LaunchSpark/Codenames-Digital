@@ -3,6 +3,7 @@ import { BOARD_CELLS } from '../../src/shared/protocol'
 import { newBoard, otherTeam } from './board'
 import { isConnected, pickClueGivers } from './roster'
 import { GameError, type Board, type Game, type Seat, type ServerState } from './state'
+import { commit, type CommitOptions } from './undo'
 
 const CLUE_WORD = /^[\p{L}]+(-[\p{L}]+)*$/u
 const MIN_PER_TEAM = 2
@@ -10,12 +11,6 @@ const MIN_PER_TEAM = 2
 function requireGame(s: ServerState): Game {
   if (!s.game) throw new GameError('not-in-lobby', 'No game is running')
   return s.game
-}
-
-/** Replaces the board and clears votes. Undo history is added in undo.ts. */
-export function commit(s: ServerState, next: Board): ServerState {
-  const game = requireGame(s)
-  return { ...s, game: { ...game, board: next, votes: {} } }
 }
 
 const withPhase = (board: Board, phase: Phase): Board => ({ ...board, phase })
@@ -148,7 +143,7 @@ export function reveal(s: ServerState, card: number): ServerState {
 
 /** Host correction: hand play to the other team. */
 export function skipTurn(s: ServerState): ServerState {
-  return endTurn(s)
+  return endTurn(s, { undoable: false })
 }
 
 /** Host correction: give a team's key to another player for the rest of this game. */
@@ -168,9 +163,9 @@ export function backToLobby(s: ServerState): ServerState {
   return { ...s, game: null }
 }
 
-export function endTurn(s: ServerState): ServerState {
+export function endTurn(s: ServerState, options?: CommitOptions): ServerState {
   const game = requireGame(s)
   const { phase } = game.board
   if (phase.name !== 'clue' && phase.name !== 'guess') return s
-  return commit(s, withPhase(game.board, { name: 'clue', team: otherTeam(phase.team) }))
+  return commit(s, withPhase(game.board, { name: 'clue', team: otherTeam(phase.team) }), options)
 }
