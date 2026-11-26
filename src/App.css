@@ -11,6 +11,10 @@
   --card-neutral: #d8bf8e;
   --card-assassin: #0b0c0e;
   --card-unknown: #e9e4d8;
+
+  /* Team colours that read as text on the dark background. */
+  --text-red: #ff7a6b;
+  --text-blue: #6eaaff;
 }
 
 .app {
@@ -74,3 +78,33 @@ h1 {
 .btn--ghost:not(:disabled):hover {
   color: var(--text);
 }
+
+.btn--danger {
+  background: #b3261e;
+  color: #fff;
+}
+
+.chip {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.chip:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  opacity: 1;
+}
+
+.chip--red { border-color: color-mix(in srgb, var(--card-red) 60%, var(--line)); }
+.chip--blue { border-color: color-mix(in srgb, var(--card-blue) 60%, var(--line)); }

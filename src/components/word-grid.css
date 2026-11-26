@@ -86,8 +86,8 @@ button.word:not(:disabled):active {
   --word-gap: 0.8vw;
   --word-pad: 0.6vw;
   --word-radius: 0.6vw;
-  --pip-size: 0.9vw;
-  --pip-gap: 0.4vw;
+  --pip-size: 1.25vw;
+  --pip-gap: 0.5vw;
 }
 
 .word-grid--tv .word {

@@ -1,0 +1,439 @@
+/* The TV is a 16:9 screen read from across a room: size in vw, keep it big. */
+
+.tv {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vw;
+  height: 100vh;
+  padding: 1.6vw;
+  overflow: hidden;
+  font-size: 1.25vw;
+}
+
+/* Each screen takes whatever the banner (if any) leaves. */
+.tv > :not(.banner) {
+  flex: 1;
+  min-height: 0;
+}
+
+.tv-waiting {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 2vw;
+}
+
+.tv-title {
+  font-size: 4.2vw;
+  letter-spacing: -0.03em;
+}
+
+.tv .btn--huge {
+  padding: 1vw 2.6vw;
+  border-radius: 0.8vw;
+  font-size: 1.8vw;
+}
+
+/* Lobby ------------------------------------------------------------------ */
+
+.tv-lobby {
+  display: grid;
+  grid-template-columns: 30vw 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 2vw 3vw;
+}
+
+.tv-lobby__head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mode-picker {
+  display: flex;
+  gap: 0.8vw;
+}
+
+.mode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 10vw;
+  padding: 0.8vw 1.6vw;
+  border: 2px solid var(--line);
+  border-radius: 0.8vw;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 1.8vw;
+  font-weight: 700;
+}
+
+.mode[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.mode:disabled {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.mode__soon {
+  font-size: 0.9vw;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.tv-lobby__join {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2vw;
+  border-radius: 1.2vw;
+  background: var(--panel);
+  text-align: center;
+}
+
+.tv-lobby__qr {
+  width: 100%;
+  max-width: 24vw;
+  aspect-ratio: 1;
+  border-radius: 0.8vw;
+  image-rendering: pixelated;
+}
+
+.tv-lobby__hint {
+  margin: 1.4vw 0 0.2vw;
+  color: var(--muted);
+}
+
+.tv-lobby__url {
+  margin: 0;
+  font-size: 1.9vw;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.tv-lobby__teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2vw;
+  min-height: 0;
+}
+
+.roster {
+  padding: 1.6vw 2vw;
+  border-top: 0.5vw solid var(--team);
+  border-radius: 1.2vw;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.roster--red { --team: var(--card-red); --team-text: var(--text-red); }
+.roster--blue { --team: var(--card-blue); --team-text: var(--text-blue); }
+
+.roster__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 1vw;
+  color: var(--team-text);
+  font-size: 2.6vw;
+}
+
+.roster__count {
+  color: var(--muted);
+  font-size: 1.6vw;
+  font-variant-numeric: tabular-nums;
+}
+
+.roster__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5vw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 2vw;
+  font-weight: 600;
+}
+
+.roster__list li {
+  display: flex;
+  align-items: center;
+  gap: 0.8vw;
+}
+
+.roster__list li.is-away {
+  color: var(--muted);
+}
+
+.dot {
+  flex: none;
+  width: 0.8vw;
+  height: 0.8vw;
+  border-radius: 50%;
+}
+
+.dot--on { background: #3fcf6d; }
+.dot--off { border: 2px solid var(--muted); }
+
+.tv-lobby__start {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6vw;
+}
+
+.tv-lobby__need {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.5vw;
+}
+
+/* Board ------------------------------------------------------------------ */
+
+.tv-board {
+  display: grid;
+  grid-template-columns: 1fr 21vw;
+  grid-template-rows: auto 1fr;
+  gap: 1.2vw 1.6vw;
+}
+
+.tv-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2vw;
+  min-height: 6vw;
+  padding: 0.6vw 1.6vw;
+  border-left: 0.6vw solid var(--team, var(--line));
+  border-radius: 0.8vw;
+  background: var(--panel);
+}
+
+.tv-status__line {
+  margin: 0;
+  font-size: 2.4vw;
+  font-weight: 600;
+}
+
+.tv-status__clue {
+  font-size: 4vw;
+  letter-spacing: 0.02em;
+}
+
+.tv-status__end {
+  display: flex;
+  align-items: center;
+  gap: 0.8vw;
+  color: var(--muted);
+  font-size: 1.6vw;
+  white-space: nowrap;
+  --pip-size: 1.1vw;
+  --pip-gap: 0.4vw;
+}
+
+.tv-status__end .pips {
+  color: var(--text);
+}
+
+.tv-board__grid {
+  min-height: 0;
+}
+
+/* Rows stretch to fill whatever height the status bar leaves. */
+.tv-board__grid .word-grid,
+.tv-over .word-grid {
+  height: 100%;
+  grid-auto-rows: 1fr;
+}
+
+.tv-side {
+  grid-row: 1 / -1;
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2vw;
+  min-height: 0;
+}
+
+.tv-remaining {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8vw;
+}
+
+.tv-remaining__team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.8vw;
+  border-radius: 0.8vw;
+  background: var(--team);
+  color: #fff;
+  font-weight: 600;
+}
+
+.tv-remaining__n {
+  font-size: 3.6vw;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tv-clues {
+  flex: 1;
+  min-height: 0;
+  padding: 1vw 1.2vw;
+  border-radius: 0.8vw;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.tv-clues h2 {
+  margin: 0 0 0.6vw;
+  color: var(--muted);
+  font-size: 1vw;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.tv-clues ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4vw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.8vw;
+  font-weight: 700;
+}
+
+.tv-clues li {
+  color: var(--team-text);
+}
+
+.tv-clues li:first-child {
+  font-size: 2.2vw;
+}
+
+.tv-clues li:not(:first-child) {
+  opacity: 0.7;
+}
+
+.tv-side__join {
+  display: flex;
+  align-items: center;
+  gap: 0.8vw;
+  color: var(--muted);
+  font-size: 0.9vw;
+  word-break: break-all;
+}
+
+.tv-side__qr {
+  flex: none;
+  width: 6vw;
+  border-radius: 0.3vw;
+  image-rendering: pixelated;
+}
+
+/* Team colour hooks used across TV screens. */
+.team-red { --team: var(--card-red); --team-text: var(--text-red); }
+.team-blue { --team: var(--card-blue); --team-text: var(--text-blue); }
+
+/* Host menu -------------------------------------------------------------- */
+
+.host-menu {
+  position: relative;
+}
+
+.host-menu__toggle {
+  width: 100%;
+  font-size: 1vw;
+}
+
+.host-menu__panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.6vw);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2vw;
+  width: 34vw;
+  padding: 1.4vw;
+  border: 1px solid var(--line);
+  border-radius: 1vw;
+  background: #262a32;
+  box-shadow: 0 1vw 3vw #0009;
+}
+
+.host-menu__section h3 {
+  margin: 0 0 0.6vw;
+  color: var(--team-text, var(--muted));
+  font-size: 1.1vw;
+}
+
+.host-menu__prompt {
+  font-size: 1.6vw !important;
+  color: var(--text) !important;
+}
+
+.host-menu__players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5vw;
+}
+
+.host-menu__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6vw;
+}
+
+.host-menu__confirm p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.host-menu .chip,
+.host-menu .btn {
+  font-size: 1vw;
+}
+
+/* Game over -------------------------------------------------------------- */
+
+.tv-over {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1.4vw;
+}
+
+.tv-over__head {
+  display: flex;
+  align-items: baseline;
+  gap: 2vw;
+}
+
+.tv-over__head .tv-title {
+  color: var(--team-text);
+}
+
+.tv-over__why {
+  margin: 0;
+  color: var(--muted);
+  font-size: 2.2vw;
+}
+
+.tv-over__actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.6vw;
+}
