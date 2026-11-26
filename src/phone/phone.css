@@ -1,0 +1,217 @@
+/* Phones: one column, thumbs, 360 px wide and up. */
+
+.app.phone {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 12px;
+  overflow-x: hidden;
+}
+
+.phone h1 {
+  font-size: 1.35rem;
+}
+
+.phone .btn {
+  min-height: 48px;
+  font-size: 1rem;
+}
+
+.phone .btn--small {
+  min-height: 36px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.team-text-red { color: var(--text-red); }
+.team-text-blue { color: var(--text-blue); }
+
+.phone-muted {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* Fields ----------------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field__label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.field__input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: var(--panel);
+  color: var(--text);
+  /* 16px stops iOS zooming into the field. */
+  font: inherit;
+  font-size: 1rem;
+}
+
+.field__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Join ------------------------------------------------------------------- */
+
+.phone-join {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8vh;
+}
+
+.phone-join h1 {
+  font-size: 2rem;
+}
+
+.phone-join__note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 0.6rem;
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.phone-join__teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.phone-join__team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 72px !important;
+  font-size: 1.15rem !important;
+}
+
+.phone-join__count {
+  font-size: 0.8rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* Lobby ------------------------------------------------------------------ */
+
+.phone-lobby {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phone-roster {
+  padding: 10px 14px;
+  border-left: 4px solid var(--team);
+  border-radius: 0.6rem;
+  background: var(--panel);
+}
+
+.phone-roster--red { --team: var(--card-red); }
+.phone-roster--blue { --team: var(--card-blue); }
+
+.phone-roster h2 {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.phone-roster ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  line-height: 1.7;
+}
+
+.phone-roster .is-me {
+  font-weight: 700;
+}
+
+/* In game ---------------------------------------------------------------- */
+
+.phone-game {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phone-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 48px;
+}
+
+.phone-head--stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.phone-status {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 0.6rem;
+  background: var(--panel);
+  font-weight: 600;
+}
+
+.phone-status--active {
+  border-left: 4px solid var(--accent);
+}
+
+.clue-form {
+  display: grid;
+  grid-template-columns: 1fr 76px;
+  gap: 8px;
+}
+
+.clue-form__send {
+  grid-column: 1 / -1;
+}
+
+.undo-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.end-turn {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--text);
+}
+
+.end-turn__count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.end-turn--mine {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 25%, var(--panel));
+}
