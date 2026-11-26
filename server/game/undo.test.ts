@@ -61,12 +61,19 @@ describe('undo', () => {
     expect(s.roster.seats.late).toBeDefined()
   })
 
-  it('does not count a skipped turn as a step', () => {
-    let s = skipTurn(redGuessing())
+  it('cannot reach back past a skipped turn', () => {
+    const s = skipTurn(redGuessing())
     expect(phase(s)).toEqual({ name: 'clue', team: 'blue' })
-    s = undo(s, 'ann')
-    expect(phase(s)).toEqual({ name: 'clue', team: 'red' })
-    expect(s.game!.history).toEqual([])
+    expect(canUndo(s)).toBe(false)
+    expect(codeOf(() => undo(s, 'dee'))).toBe('nothing-to-undo')
+  })
+
+  it('undoes moves made after a skipped turn, back to the skip', () => {
+    let s = skipTurn(redGuessing())
+    s = giveClue(s, 'dee', 'forest', 1)
+    s = undo(s, 'dee')
+    expect(phase(s)).toEqual({ name: 'clue', team: 'blue' })
+    expect(canUndo(s)).toBe(false)
   })
 
   it('counts a voted end of turn as a step', () => {

@@ -17,12 +17,16 @@ const withPhase = (board: Board, phase: Phase): Board => ({ ...board, phase })
 
 export function startGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
   if (s.game) throw new GameError('not-in-lobby', 'A game is already running')
+  requireEnoughPlayers(s)
+  return dealGame(s, words, rand)
+}
+
+function requireEnoughPlayers(s: ServerState) {
   for (const team of ['red', 'blue'] as Team[]) {
     if (s.roster.order[team].length < MIN_PER_TEAM) {
       throw new GameError('not-enough-players', `Each team needs at least ${MIN_PER_TEAM} players`)
     }
   }
-  return dealGame(s, words, rand)
 }
 
 /** Picks clue-givers and deals a fresh board, keeping the roster. */
@@ -156,6 +160,7 @@ export function makeClueGiver(s: ServerState, seatId: string): ServerState {
 
 export function newGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
   requireGame(s)
+  requireEnoughPlayers(s)
   return dealGame(s, words, rand)
 }
 
