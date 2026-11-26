@@ -26,6 +26,36 @@ const hub = () =>
     ctx: { words: WORDS, rand: seededRandom(1), newId: () => 'p1', newToken: () => 't1' },
   })
 
+describe('hub resilience', () => {
+  it('survives a socket error such as a malformed frame', () => {
+    const h = hub()
+    const phone = new FakeSocket()
+    h.attach(phone, false)
+    expect(() => phone.emit('error', new Error('Invalid UTF-8 sequence'))).not.toThrow()
+  })
+
+  it('answers an unexpected internal error with bad-message and keeps the state', () => {
+    const h = createHub({
+      joinUrl: 'http://test/',
+      ctx: {
+        words: WORDS,
+        rand: seededRandom(1),
+        newId: () => {
+          throw new TypeError('boom')
+        },
+        newToken: () => 't1',
+      },
+    })
+    const phone = new FakeSocket()
+    h.attach(phone, false)
+    phone.emit('message', JSON.stringify({ type: 'hello', client: 'player', token: null }))
+    const before = h.state()
+    expect(() => phone.emit('message', JSON.stringify({ type: 'join', name: 'ann', team: 'red' }))).not.toThrow()
+    expect(phone.sent.at(-1)).toMatchObject({ type: 'error', code: 'bad-message' })
+    expect(h.state()).toBe(before)
+  })
+})
+
 describe('hub heartbeat', () => {
   it('drops a socket that misses a ping, freeing its seat', () => {
     const h = hub()

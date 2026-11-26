@@ -38,7 +38,8 @@ export async function startServer(opts: ServerOptions): Promise<{ port: number; 
     else notFound()
   })
 
-  const wss = new WebSocketServer({ noServer: true })
+  // Every real message is well under 1 KiB; the 100 MiB default invites abuse.
+  const wss = new WebSocketServer({ noServer: true, maxPayload: 4096 })
   server.on('upgrade', (req, socket, head) => {
     if (new URL(req.url ?? '/', 'http://localhost').pathname !== WS_PATH) {
       socket.destroy()

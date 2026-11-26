@@ -10,6 +10,7 @@ export interface HubSocket {
   send(data: string): void
   on(event: 'message', fn: (data: unknown) => void): unknown
   on(event: 'close' | 'pong', fn: () => void): unknown
+  on(event: 'error', fn: (err: Error) => void): unknown
   ping(): void
   terminate(): void
 }
@@ -82,10 +83,18 @@ export function createHub(opts: { joinUrl: string; ctx: DispatchContext }): Hub 
         try {
           handle(socket, conn, String(data))
         } catch (e) {
-          if (!(e instanceof GameError)) throw e
-          send(socket, { type: 'error', code: e.code, message: e.message })
+          // One bad message must never end everyone's game: state is only
+          // replaced after a handler succeeds, so it is unchanged here.
+          if (e instanceof GameError) {
+            send(socket, { type: 'error', code: e.code, message: e.message })
+          } else {
+            console.error('Unexpected error handling a message:', e)
+            send(socket, { type: 'error', code: 'bad-message', message: 'Something went wrong' })
+          }
         }
       })
+      // Protocol errors (e.g. a malformed frame) are emitted here; ws closes the socket itself.
+      socket.on('error', (err) => console.warn('Socket error:', err.message))
       socket.on('pong', () => {
         conn.alive = true
       })

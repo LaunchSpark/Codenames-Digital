@@ -1,7 +1,7 @@
 import type { Phase, Team } from '../../src/shared/protocol'
 import { BOARD_CELLS } from '../../src/shared/protocol'
 import { newBoard, otherTeam } from './board'
-import { isConnected, pickClueGivers } from './roster'
+import { isConnected, pickClueGivers, seatOf } from './roster'
 import { GameError, type Board, type Game, type Seat, type ServerState } from './state'
 import { commit, type CommitOptions } from './undo'
 
@@ -148,7 +148,7 @@ export function skipTurn(s: ServerState): ServerState {
 
 /** Host correction: give a team's key to another player for the rest of this game. */
 export function makeClueGiver(s: ServerState, seatId: string): ServerState {
-  const seat = s.roster.seats[seatId]
+  const seat = seatOf(s, seatId)
   if (!seat) throw new GameError('unknown-player', 'No such player')
   const game = requireGame(s)
   return { ...s, game: { ...game, clueGivers: { ...game.clueGivers, [seat.team]: seatId }, votes: {} } }

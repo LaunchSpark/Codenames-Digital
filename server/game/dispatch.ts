@@ -1,5 +1,5 @@
 import type { ClientMessage, ServerMessage, Team } from '../../src/shared/protocol'
-import { addSeat, changeSeat, removeSeat } from './roster'
+import { addSeat, changeSeat, removeSeat, seatOf } from './roster'
 import {
   backToLobby,
   castEndVote,
@@ -48,7 +48,7 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
 
     case 'join': {
       // A connection whose seat the host removed joins afresh.
-      if (from.seatId && s.roster.seats[from.seatId]) {
+      if (from.seatId && seatOf(s, from.seatId)) {
         return { state: changeSeat(s, from.seatId, msg.name, msg.team) }
       }
       const id = ctx.newId()

@@ -95,6 +95,14 @@ describe('dispatch', () => {
     expect(state.game!.board.cards[x].revealed).toBe(true)
   })
 
+  it('treats inherited property names as unknown players', () => {
+    for (const playerId of ['toString', 'constructor', '__proto__']) {
+      expect(codeOf(() => run(guess(), host, { type: 'host:remove-player', playerId })), playerId).toBe('unknown-player')
+      expect(codeOf(() => run(guess(), host, { type: 'host:make-clue-giver', playerId })), playerId).toBe('unknown-player')
+      expect(codeOf(() => run(lobby(), as(playerId), { type: 'join', name: 'x', team: 'red' })), playerId).toBeNull()
+    }
+  })
+
   it('refuses hello, which only the hub handles', () => {
     expect(codeOf(() => run(lobby(), guest, { type: 'hello', client: 'tv' }))).toBe('bad-message')
   })

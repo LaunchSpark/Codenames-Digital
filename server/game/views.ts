@@ -1,5 +1,5 @@
 import type { CardView, GameView, Team, TeamView, You } from '../../src/shared/protocol'
-import { isConnected } from './roster'
+import { isConnected, seatOf } from './roster'
 import { remaining, voters } from './rules'
 import type { ServerState } from './state'
 import { canUndo } from './undo'
@@ -18,7 +18,7 @@ function seesKey(s: ServerState, viewer: Viewer): boolean {
 
 function youFor(s: ServerState, viewer: Viewer): You {
   if (viewer.kind !== 'player') return viewer
-  const seat = s.roster.seats[viewer.seatId]
+  const seat = seatOf(s, viewer.seatId)
   if (!seat) return { kind: 'spectator' }
   const game = s.game
   const role = !game ? null : game.clueGivers[seat.team] === seat.id ? 'clue-giver' : 'guesser'

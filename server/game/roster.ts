@@ -13,6 +13,10 @@ export function emptyState(): ServerState {
 
 export const isConnected = (seat: Seat): boolean => seat.connections > 0
 
+/** Own-property lookup, so ids like "toString" or "__proto__" are simply unknown. */
+export const seatOf = (s: ServerState, id: string): Seat | undefined =>
+  Object.hasOwn(s.roster.seats, id) ? s.roster.seats[id] : undefined
+
 export const seatByToken = (s: ServerState, token: string): Seat | undefined =>
   Object.values(s.roster.seats).find((seat) => seat.token === token)
 
@@ -47,7 +51,7 @@ export function addSeat(
 
 export function changeSeat(s: ServerState, id: string, rawName: string, team: Team): ServerState {
   if (s.game) throw new GameError('not-in-lobby', 'Teams are locked while a game is running')
-  const seat = s.roster.seats[id]
+  const seat = seatOf(s, id)
   if (!seat) throw new GameError('unknown-player', 'No such player')
   const name = validName(s, rawName, id)
   const { roster } = s
@@ -70,7 +74,7 @@ const withoutVote = (game: Game, id: string): Game => {
 }
 
 export function removeSeat(s: ServerState, id: string): ServerState {
-  const seat = s.roster.seats[id]
+  const seat = seatOf(s, id)
   if (!seat) throw new GameError('unknown-player', 'No such player')
   const seats = { ...s.roster.seats }
   delete seats[id]
@@ -87,7 +91,7 @@ export function removeSeat(s: ServerState, id: string): ServerState {
 }
 
 export function setConnected(s: ServerState, id: string, delta: 1 | -1): ServerState {
-  const seat = s.roster.seats[id]
+  const seat = seatOf(s, id)
   if (!seat) return s
   const connections = Math.max(0, seat.connections + delta)
   const game = s.game && connections === 0 ? withoutVote(s.game, id) : s.game
