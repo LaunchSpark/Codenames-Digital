@@ -200,6 +200,15 @@ describe('guesser', () => {
   })
 })
 
+describe('kicked', () => {
+  it('goes back to the join form with an empty name', () => {
+    const { rerender } = setup('phone-lobby')
+    rerender(game('phone-spectator-lobby')) // the host removed this seat
+    expect(nameInput().value).toBe('')
+    expect(button('Join Red').disabled).toBe(true)
+  })
+})
+
 describe('scroll position', () => {
   it('jumps to the top when the screen changes, not when the same screen updates', () => {
     const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})

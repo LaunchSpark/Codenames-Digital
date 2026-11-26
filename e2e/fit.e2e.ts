@@ -55,6 +55,11 @@ describe('phone screens fit without scrolling', () => {
     const page = await (await browser.newContext({ viewport: size, isMobile: true, hasTouch: true, deviceScaleFactor: 2 })).newPage()
     for (const fx of ['phone-spectator-lobby', 'phone-spectator-midgame']) {
       await page.goto(`http://localhost:${server.port}/?mock=${fx}`)
+      // Seen once in a full run: the button never appeared. If it happens again,
+      // the failure message shows what the page was displaying instead.
+      const join = page.getByRole('button', { name: 'Join Red' })
+      const shown = await join.waitFor({ timeout: 10_000 }).then(() => '', async () => page.locator('body').innerText())
+      expect(shown, `${fx}: Join button missing; page showed:`).toBe('')
       for (const team of ['Red', 'Blue']) {
         const box = await page.getByRole('button', { name: `Join ${team}` }).boundingBox()
         expect(box!.y + box!.height, `${fx} Join ${team}`).toBeLessThanOrEqual(size.height / 2)
