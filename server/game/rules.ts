@@ -146,6 +146,28 @@ export function reveal(s: ServerState, card: number): ServerState {
   return commit(s, withPhase(board, { name: 'clue', team: otherTeam(guessing) }))
 }
 
+/** Host correction: hand play to the other team. */
+export function skipTurn(s: ServerState): ServerState {
+  return endTurn(s)
+}
+
+/** Host correction: give a team's key to another player for the rest of this game. */
+export function makeClueGiver(s: ServerState, seatId: string): ServerState {
+  const seat = s.roster.seats[seatId]
+  if (!seat) throw new GameError('unknown-player', 'No such player')
+  const game = requireGame(s)
+  return { ...s, game: { ...game, clueGivers: { ...game.clueGivers, [seat.team]: seatId }, votes: {} } }
+}
+
+export function newGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
+  requireGame(s)
+  return dealGame(s, words, rand)
+}
+
+export function backToLobby(s: ServerState): ServerState {
+  return { ...s, game: null }
+}
+
 export function endTurn(s: ServerState): ServerState {
   const game = requireGame(s)
   const { phase } = game.board
