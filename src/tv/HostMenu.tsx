@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Settings2 } from 'lucide-react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { otherTeam, TEAM_NAME } from '../components/teams'
 import type { ClientMessage, GameView, PlayerInfo, Team } from '../shared/protocol'
@@ -33,6 +34,7 @@ export function HostMenu({ view, send, disabled }: HostMenuProps) {
         aria-expanded={open}
         onClick={() => setUserOpen((o) => !o)}
       >
+        <Settings2 aria-hidden="true" size={16} />
         Host menu
       </button>
 

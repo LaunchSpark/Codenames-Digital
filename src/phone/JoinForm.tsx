@@ -8,7 +8,7 @@ import { Label } from '../components/ui/label'
 import { TEAM_NAME } from '../components/teams'
 import type { ClientMessage, GameView, Team } from '../shared/protocol'
 import { keepAwake } from '../wake/keepAwake'
-import '../components/lobby-preview.css'
+import '../components/lobby.css'
 
 interface JoinFormProps {
   view: GameView
@@ -22,35 +22,37 @@ export function JoinForm({ view, send, disabled }: JoinFormProps) {
   const trimmed = name.trim()
 
   const join = (team: Team) => {
+    // Inside the tap: the only moment the wake lock / looping video may start.
+    // Keep this synchronous — after an await, phones refuse it silently.
     keepAwake()
     send({ type: 'join', name: trimmed, team })
   }
 
   return (
-    <div className="join-preview">
+    <div className="join-screen">
       <LobbyBrand />
-      <header className="join-preview__intro">
+      <header className="join-screen__intro">
         <span className="lobby-eyebrow">A GAME OF WORDS & INSTINCT</span>
         <h1>Good clues.<br /><span>Great company.</span></h1>
         <p>Pick a name. Choose a side.</p>
       </header>
-      <Card className="join-preview__card">
+      <Card className="join-screen__card">
         <CardHeader>
           <CardTitle className="text-xl">Join the table</CardTitle>
           <CardDescription>Choose a name everyone will recognize.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="join-preview__form" onSubmit={(e) => e.preventDefault()}>
-            <div className="join-preview__field">
+          <form className="join-screen__form" onSubmit={(e) => e.preventDefault()}>
+            <div className="join-screen__field">
               <Label htmlFor="player-name">Your name</Label>
               <Input id="player-name" className="h-12 text-base md:text-base" placeholder="e.g. Alex"
                 value={name} maxLength={20} autoComplete="nickname" autoCapitalize="words"
                 enterKeyHint="done" onChange={(e) => setName(e.target.value)} />
             </div>
-            {midGame && <p className="join-preview__note">Game in progress &mdash; you'll join as a guesser</p>}
+            {midGame && <p className="join-screen__note">Game in progress &mdash; you'll join as a guesser</p>}
             <fieldset>
-              <legend className="join-preview__legend">Choose your team</legend>
-              <div className="join-preview__teams">
+              <legend className="join-screen__legend">Choose your team</legend>
+              <div className="join-screen__teams">
                 {(['red', 'blue'] as Team[]).map((t) => (
                   <Button key={t} type="button" variant="outline"
                     className={`join-team join-team--${t}`} disabled={disabled || !trimmed} onClick={() => join(t)}>
@@ -66,7 +68,7 @@ export function JoinForm({ view, send, disabled }: JoinFormProps) {
           </form>
         </CardContent>
       </Card>
-      <p className="join-preview__footer">One phone per player. One screen for the table.</p>
+      <p className="screen-footer">One phone per player. One screen for the table.</p>
     </div>
   )
 }

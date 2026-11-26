@@ -44,6 +44,13 @@ describe('layout stays put', () => {
     // Clue-givers see a colour-only key card, so take a board word from the TV.
     const word = (await table.tv.locator('.word-grid .word').first().innerText()).trim()
 
+    // Tailwind's reset must not leave the in-game headings at normal weight.
+    const weight = async (p: Page, sel: string) =>
+      Number(await p.evaluate(`getComputedStyle(document.querySelector(${JSON.stringify(sel)})).fontWeight`))
+    expect(await weight(guesser.page, 'h1')).toBeGreaterThanOrEqual(600)
+    expect(await weight(giver.page, 'h1')).toBeGreaterThanOrEqual(600)
+    expect(await weight(table.tv, '.tv-clues h2')).toBeGreaterThanOrEqual(600)
+
     await snapAll('start')
 
     // A rejected clue shows an error message.

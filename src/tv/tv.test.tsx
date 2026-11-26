@@ -48,6 +48,16 @@ describe('Lobby', () => {
     expect(within(red).getAllByRole('listitem').map((li, i) => within(li).getByText(view.teams.red.players[i].name, { exact: true }).textContent)).toEqual(['Ana', 'Ben', 'Cara'])
   })
 
+  it('says in words when a player is away', () => {
+    const { view, you } = fixture('tv-lobby')
+    renderLobby(view, you)
+    const blue = screen.getByRole('list', { name: 'Blue team' })
+    const eli = within(blue).getByText('Eli', { exact: true }).closest('li')!
+    expect(within(eli).getByText('away')).toBeTruthy()
+    const dev = within(blue).getByText('Dev', { exact: true }).closest('li')!
+    expect(within(dev).queryByText('away')).toBeNull()
+  })
+
   it('start is host-only', () => {
     const guest = fixture('tv-lobby')
     renderLobby(guest.view, guest.you)

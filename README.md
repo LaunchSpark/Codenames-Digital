@@ -46,6 +46,18 @@ npm run dev          # Vite on :5173, proxies /ws to the server
 Open `http://localhost:5173/tv` on the laptop; phones use the printed
 `http://<laptop-ip>:5173/` address.
 
+### Windows: "Cannot find native binding"
+
+Some npm versions (seen with npm 10.5) skip the platform-specific packages that
+Vite, oxlint and Tailwind need, so `npm run build` fails with *Cannot find
+native binding*. Upgrading npm (`npm i -g npm@latest`) is the real fix. To get
+going without it, install the Windows bindings that match the versions in
+`node_modules`:
+
+```sh
+npm i --no-save @rolldown/binding-win32-x64-msvc@1.2.7 @oxlint/binding-win32-x64-msvc@1.81.0   @tailwindcss/oxide-win32-x64-msvc@4.3.5 lightningcss-win32-x64-msvc@1.33.0
+```
+
 ### Playtesting without a pile of phones
 
 ```sh

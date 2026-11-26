@@ -28,12 +28,13 @@
   gap: 0.3em;
   min-width: 0;
   padding: var(--word-pad);
-  border: 2px solid transparent;
+  border: 1px solid var(--card-unknown-line);
   border-radius: var(--word-radius);
   background: var(--card-unknown);
-  color: #1b1d22;
+  color: var(--text);
   font: inherit;
-  font-weight: 700;
+  font-weight: 650;
+  letter-spacing: 0.01em;
   text-align: center;
   text-transform: uppercase;
   overflow-wrap: anywhere;
@@ -67,18 +68,18 @@ button.word:not(:disabled):active {
    stays legible. Picked cards (below) get the full colour. */
 .word--red { border-color: color-mix(in srgb, var(--card-red) var(--key-border), var(--card-unknown)); background: color-mix(in srgb, var(--card-red) var(--key-tint), var(--card-unknown)); }
 .word--blue { border-color: color-mix(in srgb, var(--card-blue) var(--key-border), var(--card-unknown)); background: color-mix(in srgb, var(--card-blue) var(--key-tint), var(--card-unknown)); }
-.word--neutral { border-color: color-mix(in srgb, #a8956d var(--key-border), var(--card-unknown)); background: color-mix(in srgb, var(--card-neutral) calc(var(--key-tint) * 1.6), var(--card-unknown)); }
-.word--assassin { border-color: #000; background: #3a3d44; color: #f2f2f2; }
+.word--neutral { border-color: color-mix(in srgb, var(--card-neutral) var(--key-border), var(--card-unknown)); background: color-mix(in srgb, var(--card-neutral) calc(var(--key-tint) * 1.6), var(--card-unknown)); }
+.word--assassin { border-color: #52525b; background: var(--card-assassin); color: var(--text); }
 
-/* Revealed: solid team colour, the word dimmed beneath. */
-.word--revealed { color: #ffffffb0; }
+/* Revealed: solid team colour, the word softened on top. */
+.word--revealed { color: #ffffffd0; }
 .word--revealed.word--red { border-color: var(--card-red); background: var(--card-red); }
 .word--revealed.word--blue { border-color: var(--card-blue); background: var(--card-blue); }
-.word--revealed.word--neutral { border-color: #a8956d; background: var(--card-neutral); color: #1b1d2299; }
-.word--revealed.word--assassin { background: var(--card-assassin); }
+.word--revealed.word--neutral { border-color: var(--card-neutral); background: var(--card-neutral); color: #ffffffc0; }
+.word--revealed.word--assassin { border-color: #f43f5e; background: var(--card-assassin); }
 
 .word--mine {
-  outline: 4px solid var(--legacy-accent);
+  outline: 3px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -150,6 +151,11 @@ button.word:not(:disabled):active {
 .word-grid--key .word--blue { background: var(--card-blue); }
 .word-grid--key .word--neutral { background: var(--card-neutral); }
 .word-grid--key .word--assassin { background: var(--card-assassin); box-shadow: inset 0 0 0 2px #fff3; }
+
+/* Solid tiles on near-black lose too much at the board-wide fade. */
+.word-grid--key.word-grid--dimmed {
+  opacity: 0.6;
+}
 
 .word-grid--key .word--revealed {
   opacity: 0.28;

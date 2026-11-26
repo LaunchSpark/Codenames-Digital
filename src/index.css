@@ -51,4 +51,5 @@
     -webkit-font-smoothing: antialiased;
   }
   button:not(:disabled) { cursor: pointer; }
+  h1, h2, h3 { font-weight: 600; }
 }

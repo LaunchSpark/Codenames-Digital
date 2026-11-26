@@ -1,4 +1,4 @@
-﻿import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { configDefaults, defineConfig } from 'vitest/config'

@@ -1,4 +1,6 @@
-/* Phones: one column, thumbs, 360 px wide and up. */
+/* Phones: one column, thumbs, 360 px wide and up. Same look as the lobby
+   (src/components/lobby.css): near-black background, bordered cards, team
+   colours as tints. */
 
 .app.phone {
   display: flex;
@@ -12,6 +14,8 @@
 
 .phone h1 {
   font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
 }
 
 .phone .btn {
@@ -19,132 +23,50 @@
   font-size: 1rem;
 }
 
-.phone .btn--small {
-  min-height: 36px;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.9rem;
-}
-
 .team-text-red { color: var(--text-red); }
 .team-text-blue { color: var(--text-blue); }
 
 .phone-muted {
   margin: 0;
-  color: var(--legacy-muted);
+  color: var(--text-muted);
 }
 
-/* Fields ----------------------------------------------------------------- */
+/* Fields: match the shadcn Input/Label on the join screen. --------------- */
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
 }
 
 .field__label {
-  color: var(--legacy-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .field__input {
   width: 100%;
   min-height: 48px;
   padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 0.6rem;
-  background: var(--panel);
+  border: 1px solid hsl(var(--input));
+  border-radius: 8px;
+  background: transparent;
   color: var(--text);
   /* 16px stops iOS zooming into the field. */
   font: inherit;
   font-size: 1rem;
+  box-shadow: 0 1px 2px #0000000d;
 }
 
-.field__input:focus {
-  outline: 2px solid var(--legacy-accent);
-  outline-offset: 1px;
+.field__input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px hsl(var(--ring));
 }
 
-/* Join ------------------------------------------------------------------- */
-
-.phone-join {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding-top: 8vh;
-}
-
-.phone-join h1 {
-  font-size: 2rem;
-}
-
-.phone-join__note {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 0.6rem;
-  background: var(--panel);
-  color: var(--legacy-muted);
-}
-
-.phone-join__teams {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.phone-join__team {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  min-height: 72px !important;
-  font-size: 1.15rem !important;
-}
-
-.phone-join__count {
-  font-size: 0.8rem;
-  font-weight: 500;
-  opacity: 0.85;
-}
-
-/* Lobby ------------------------------------------------------------------ */
-
-.phone-lobby {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.phone-roster {
-  padding: 10px 14px;
-  border-left: 4px solid var(--team);
-  border-radius: 0.6rem;
-  background: var(--panel);
-}
-
-.phone-roster--red { --team: var(--card-red); }
-.phone-roster--blue { --team: var(--card-blue); }
-
-.phone-roster h2 {
-  margin: 0 0 6px;
-  font-size: 0.85rem;
-  color: var(--legacy-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.phone-roster ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  line-height: 1.7;
-}
-
-.phone-roster .is-me {
-  font-weight: 700;
+select.field__input {
+  color-scheme: dark;
 }
 
 /* In game ---------------------------------------------------------------- */
@@ -169,43 +91,59 @@
   gap: 2px;
 }
 
+/* A bordered card; tinted by the player's team when it's their move. */
 .phone-status {
+  display: flex;
+  align-items: center;
   margin: 0;
-  padding: 10px 12px;
-  border-radius: 0.6rem;
+  /* Status text is one or two lines depending on the turn; always reserve two. */
+  min-height: calc(2lh + 24px);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
   background: var(--panel);
-  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .phone-status--active {
-  border-left: 4px solid var(--legacy-accent);
+  border-color: var(--team-line, var(--line));
+  background: linear-gradient(160deg, var(--team-tint, var(--panel)), var(--panel) 70%);
+  color: var(--team-text, var(--text));
+  font-weight: 600;
 }
 
 .clue-form {
   display: grid;
   grid-template-columns: 1fr 76px;
-  gap: 8px;
+  gap: 10px;
 }
 
 .clue-form__send {
   grid-column: 1 / -1;
 }
 
-
+/* Outline button, like shadcn's outline variant. */
 .end-turn {
-  border-color: var(--line);
-  background: var(--panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-color: hsl(var(--input));
+  background: transparent;
   color: var(--text);
 }
 
 .end-turn__count {
-  color: var(--legacy-muted);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .end-turn--mine {
-  border-color: var(--legacy-accent);
-  background: color-mix(in srgb, var(--legacy-accent) 25%, var(--panel));
+  border-color: var(--team-line, var(--line));
+  background: var(--team-tint, var(--hover));
+  color: var(--team-text, var(--text));
 }
 
 /* One slot for the clue box and the status line: both are laid out in the same
@@ -220,11 +158,4 @@
 
 .turn-slot > .is-hidden {
   visibility: hidden;
-}
-
-/* Status text is one or two lines depending on the turn; always reserve two. */
-.phone-status {
-  display: flex;
-  align-items: center;
-  min-height: calc(2lh + 20px);
 }

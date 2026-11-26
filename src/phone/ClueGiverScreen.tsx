@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Undo2 } from 'lucide-react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { WordGrid } from '../components/WordGrid'
 import { guessesLeftText, TEAM_NAME } from '../components/teams'
@@ -10,7 +11,7 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
   const myClueTurn = phase.name === 'clue' && phase.team === you.team
 
   return (
-    <div className="phone-game">
+    <div className={`phone-game team-${you.team}`}>
       <header className="phone-head">
         <h1 className={`team-text-${you.team}`}>{TEAM_NAME[you.team]} clue-giver</h1>
         <UndoButton canUndo={view.canUndo} disabled={disabled} send={send} />
@@ -119,6 +120,7 @@ function UndoButton({
         disabled={disabled || !canUndo}
         onClick={() => setConfirming(true)}
       >
+        <Undo2 aria-hidden="true" size={18} />
         Undo
       </button>
       {confirming && canUndo && (

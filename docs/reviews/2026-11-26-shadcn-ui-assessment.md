@@ -1,4 +1,4 @@
-﻿# shadcn/ui adoption assessment
+# shadcn/ui adoption assessment
 
 Broad adoption is a good fit for Codenames Digital's visual direction. Use shadcn/ui for shared controls, forms, dialogs, and panel surfaces across phone and TV screens. Keep board rendering and game behavior in domain components, with the same theme applied to them.
 
