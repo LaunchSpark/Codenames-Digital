@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { TEAM_NAME } from '../components/teams'
+import { otherTeam, TEAM_NAME } from '../components/teams'
 import type { ClientMessage, GameView, PlayerInfo, Team } from '../shared/protocol'
 
 interface HostMenuProps {
@@ -125,6 +125,29 @@ export function HostMenu({ view, send, disabled }: HostMenuProps) {
             >
               Skip turn
             </button>
+          </section>
+
+          <section className="host-menu__section">
+            <h3>Move a player</h3>
+            <div className="host-menu__players">
+              {TEAMS.flatMap((t) => view.teams[t].players).map((p) => {
+                const to = otherTeam(p.team)
+                const isClueGiver = view.teams[p.team].clueGiverId === p.id
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className={`chip chip--${p.team}`}
+                    aria-label={`Move ${p.name} to ${TEAM_NAME[to]}`}
+                    title={isClueGiver ? 'Make someone else clue-giver first' : `Move to ${TEAM_NAME[to]}`}
+                    disabled={disabled || isClueGiver}
+                    onClick={() => send({ type: 'host:move-player', playerId: p.id, team: to })}
+                  >
+                    ⇄ {p.name}
+                  </button>
+                )
+              })}
+            </div>
           </section>
 
           <section className="host-menu__section">

@@ -1,4 +1,5 @@
 import type { Team } from '../../src/shared/protocol'
+import { shuffle } from './board'
 import { GameError, type Game, type Seat, type ServerState } from './state'
 
 const MAX_NAME = 20
@@ -54,16 +55,46 @@ export function changeSeat(s: ServerState, id: string, rawName: string, team: Te
   const seat = seatOf(s, id)
   if (!seat) throw new GameError('unknown-player', 'No such player')
   const name = validName(s, rawName, id)
+  const renamed = { ...s, roster: { ...s.roster, seats: { ...s.roster.seats, [id]: { ...seat, name } } } }
+  return assignTeam(renamed, id, team)
+}
+
+/**
+ * Puts a seat on a team, at the back of its clue-giver order, dropping any vote.
+ * No phase checks: callers decide when moving is allowed.
+ */
+export function assignTeam(s: ServerState, id: string, team: Team): ServerState {
+  const seat = seatOf(s, id)
+  if (!seat) throw new GameError('unknown-player', 'No such player')
+  if (seat.team === team) return s
   const { roster } = s
-  const order =
-    team === seat.team
-      ? roster.order
-      : {
-          ...roster.order,
-          [seat.team]: roster.order[seat.team].filter((x) => x !== id),
-          [team]: [...roster.order[team], id],
-        }
-  return { ...s, roster: { ...roster, seats: { ...roster.seats, [id]: { ...seat, name, team } }, order } }
+  const order = {
+    ...roster.order,
+    [seat.team]: roster.order[seat.team].filter((x) => x !== id),
+    [team]: [...roster.order[team], id],
+  }
+  return {
+    ...s,
+    roster: { ...roster, seats: { ...roster.seats, [id]: { ...seat, team } }, order },
+    game: s.game ? withoutVote(s.game, id) : null,
+  }
+}
+
+/** Lobby only: deals everyone into two balanced teams in a random order. */
+export function shuffleTeams(s: ServerState, rand: () => number): ServerState {
+  if (s.game) throw new GameError('not-in-lobby', 'Teams can only be shuffled in the lobby')
+  const ids = shuffle([...s.roster.order.red, ...s.roster.order.blue], rand)
+  // Who gets the odd player out is random too.
+  const first: Team = rand() < 0.5 ? 'red' : 'blue'
+  const second: Team = first === 'red' ? 'blue' : 'red'
+  const order: Record<Team, string[]> = { red: [], blue: [] }
+  const seats = { ...s.roster.seats }
+  ids.forEach((id, i) => {
+    const team = i % 2 === 0 ? first : second
+    order[team].push(id)
+    seats[id] = { ...seats[id], team }
+  })
+  return { ...s, roster: { ...s.roster, seats, order } }
 }
 
 const withoutVote = (game: Game, id: string): Game => {

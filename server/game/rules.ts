@@ -1,7 +1,7 @@
 import type { Phase, Team } from '../../src/shared/protocol'
 import { BOARD_CELLS } from '../../src/shared/protocol'
 import { newBoard, otherTeam } from './board'
-import { isConnected, pickClueGivers, seatOf } from './roster'
+import { assignTeam, isConnected, pickClueGivers, seatOf } from './roster'
 import { GameError, type Board, type Game, type Seat, type ServerState } from './state'
 import { commit, logged, type CommitOptions } from './undo'
 
@@ -172,6 +172,19 @@ export function makeClueGiver(s: ServerState, seatId: string): ServerState {
     ...s,
     game: { ...logged(game, label), clueGivers: { ...game.clueGivers, [seat.team]: seatId }, votes: {} },
   }
+}
+
+/**
+ * Host: move a player to another team — in the lobby, or mid-game as a guesser.
+ * A current clue-giver can't move mid-game: they would take the key across.
+ */
+export function moveSeat(s: ServerState, seatId: string, team: Team): ServerState {
+  if (!seatOf(s, seatId)) throw new GameError('unknown-player', 'No such player')
+  const game = s.game
+  if (game && (game.clueGivers.red === seatId || game.clueGivers.blue === seatId)) {
+    throw new GameError('clue-giver-locked', 'Make someone else clue-giver before moving this player')
+  }
+  return settleVotes(assignTeam(s, seatId, team))
 }
 
 export function newGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {

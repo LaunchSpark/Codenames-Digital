@@ -104,6 +104,7 @@ export type ErrorCode =
   | 'invalid-vote'
   | 'nothing-to-undo'
   | 'unknown-player'
+  | 'clue-giver-locked'
 
 export type ServerMessage =
   | { type: 'welcome'; token: string; playerId: string }
@@ -131,6 +132,10 @@ export type ClientMessage =
   | { type: 'host:remove-player'; playerId: string }
   /** Step back through the timeline, host corrections included; steps >= 1. */
   | { type: 'host:undo'; steps: number }
+  /** Lobby or mid-game; refused (clue-giver-locked) for a current clue-giver mid-game. */
+  | { type: 'host:move-player'; playerId: string; team: Team }
+  /** Lobby only: everyone into two balanced teams, random order. */
+  | { type: 'host:shuffle-teams' }
 
 export const SEAT_STORAGE_KEY = 'codenames-seat'
 export const WS_PATH = '/ws'

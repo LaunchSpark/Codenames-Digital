@@ -1,4 +1,4 @@
-import { TEAM_NAME } from '../components/teams'
+import { otherTeam, TEAM_NAME } from '../components/teams'
 import type { ClientMessage, GameView, Team, You } from '../shared/protocol'
 import { JoinQr } from './JoinQr'
 
@@ -37,7 +37,7 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
 
       <section className="tv-lobby__teams">
         {(['red', 'blue'] as Team[]).map((t) => (
-          <Roster key={t} team={t} view={view} />
+          <Roster key={t} team={t} view={view} host={you.host} send={send} disabled={disabled} />
         ))}
       </section>
 
@@ -51,6 +51,14 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
           >
             Start
           </button>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            disabled={disabled || view.teams.red.players.length + view.teams.blue.players.length < 2}
+            onClick={() => send({ type: 'host:shuffle-teams' })}
+          >
+            Random teams
+          </button>
           {!ready && <p className="tv-lobby__need">Each team needs at least 2 players</p>}
         </footer>
       )}
@@ -58,7 +66,16 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
   )
 }
 
-function Roster({ team, view }: { team: Team; view: GameView }) {
+interface RosterProps {
+  team: Team
+  view: GameView
+  /** Host gets a swap button per player. */
+  host: boolean
+  send: (m: ClientMessage) => void
+  disabled?: boolean
+}
+
+function Roster({ team, view, host, send, disabled }: RosterProps) {
   const { players } = view.teams[team]
   return (
     <div className={`roster roster--${team}`}>
@@ -73,6 +90,18 @@ function Roster({ team, view }: { team: Team; view: GameView }) {
               aria-label={p.connected ? 'connected' : 'disconnected'}
             />
             {p.name}
+            {host && (
+              <button
+                type="button"
+                className="roster__move"
+                aria-label={`Move ${p.name} to ${TEAM_NAME[otherTeam(team)]}`}
+                title={`Move to ${TEAM_NAME[otherTeam(team)]}`}
+                disabled={disabled}
+                onClick={() => send({ type: 'host:move-player', playerId: p.id, team: otherTeam(team) })}
+              >
+                ⇄
+              </button>
+            )}
           </li>
         ))}
         {players.length === 0 && <li className="roster__empty" aria-hidden="true" />}

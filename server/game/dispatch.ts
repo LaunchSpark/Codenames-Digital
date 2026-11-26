@@ -1,11 +1,12 @@
 import type { ClientMessage, ServerMessage, Team } from '../../src/shared/protocol'
-import { addSeat, changeSeat, removeSeat, seatOf } from './roster'
+import { addSeat, changeSeat, removeSeat, seatOf, shuffleTeams } from './roster'
 import {
   backToLobby,
   castEndVote,
   castVote,
   giveClue,
   makeClueGiver,
+  moveSeat,
   newGame,
   settleVotes,
   skipTurn,
@@ -78,6 +79,10 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
       return { state: skipTurn(s) }
     case 'host:remove-player':
       return { state: settleVotes(removeSeat(s, msg.playerId)) }
+    case 'host:move-player':
+      return { state: moveSeat(s, msg.playerId, msg.team) }
+    case 'host:shuffle-teams':
+      return { state: shuffleTeams(s, ctx.rand) }
     case 'host:undo':
       return { state: hostUndo(s, msg.steps) }
   }
@@ -102,6 +107,8 @@ const SHAPES: Record<ClientMessage['type'], (m: Record<string, unknown>) => bool
   'host:skip-turn': () => true,
   'host:remove-player': (m) => isString(m.playerId),
   'host:undo': (m) => isNumber(m.steps),
+  'host:move-player': (m) => isString(m.playerId) && isTeam(m.team),
+  'host:shuffle-teams': () => true,
 }
 
 export function parseClientMessage(raw: string): ClientMessage {

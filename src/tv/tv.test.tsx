@@ -62,6 +62,27 @@ describe('Lobby', () => {
     expect(send).toHaveBeenCalledWith({ type: 'host:start' })
   })
 
+  it('host can move a lobby player to the other team', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    const send = renderLobby(view, you)
+    fireEvent.click(screen.getByRole('button', { name: 'Move Ben to Blue' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:move-player', playerId: 'p2', team: 'blue' })
+  })
+
+  it('host can shuffle teams', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    const send = renderLobby(view, you)
+    fireEvent.click(screen.getByRole('button', { name: 'Random teams' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:shuffle-teams' })
+  })
+
+  it('team tools are host-only', () => {
+    const { view, you } = fixture('tv-lobby')
+    renderLobby(view, you)
+    expect(screen.queryByRole('button', { name: 'Random teams' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Move Ben to Blue' })).toBeNull()
+  })
+
   it('start is disabled when a team has fewer than 2 players', () => {
     const { view, you } = fixture('tv-lobby-host')
     view.teams.blue.players = view.teams.blue.players.slice(0, 1)
@@ -174,6 +195,16 @@ describe('BoardScreen', () => {
     render(<BoardScreen view={view} you={you} send={vi.fn()} />)
     fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
     expect((screen.getByRole('button', { name: 'Undo last move' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('host menu moves a guesser mid-game, but not a clue-giver', () => {
+    const { view, you } = fixture('tv-guess-host')
+    const send = vi.fn()
+    render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Move Ben to Blue' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:move-player', playerId: 'p2', team: 'blue' })
+    expect((screen.getByRole('button', { name: 'Move Ana to Blue' }) as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('disabled turns host actions off', () => {

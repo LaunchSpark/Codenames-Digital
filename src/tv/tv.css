@@ -467,3 +467,21 @@
 .host-menu__move:focus-visible {
   background: #ffffff14;
 }
+
+/* Host swap button beside each lobby roster name. */
+.roster__move {
+  margin-left: auto;
+  padding: 0.1vw 0.6vw;
+  border: 1px solid var(--line);
+  border-radius: 0.4vw;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.1vw;
+  cursor: pointer;
+}
+
+.roster__move:hover:not(:disabled),
+.roster__move:focus-visible {
+  color: var(--text);
+  border-color: var(--muted);
+}
