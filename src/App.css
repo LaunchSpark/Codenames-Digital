@@ -6,152 +6,25 @@
   --muted: #939aa8;
   --accent: #4f8cff;
 
-  /* The five card states. Red and blue are unused until competitive mode. */
   --card-red: #c0392b;
   --card-blue: #2c6fbb;
-  --card-green: #3f9d6d;
-  --card-yellow: #d8bf8e;
-  --card-black: #0b0c0e;
+  --card-neutral: #d8bf8e;
+  --card-assassin: #0b0c0e;
+  --card-unknown: #e9e4d8;
 }
 
 .app {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
   padding: 1.5rem;
   background: var(--bg);
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-.panel {
-  width: min(100%, 34rem);
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding: 1.75rem;
-  border: 1px solid var(--line);
-  border-radius: 1rem;
-  background: var(--panel);
-}
-
 h1 {
   margin: 0;
   font-size: 1.6rem;
   letter-spacing: -0.02em;
-}
-
-.subtitle {
-  margin: -0.75rem 0 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-/* Setup ------------------------------------------------------------------ */
-
-.choice {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.choice__label {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.choice__options {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.chip {
-  min-width: 3.25rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 0.5rem;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.chip:hover {
-  border-color: var(--muted);
-  color: var(--text);
-}
-
-.chip[aria-pressed='true'] {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  color: var(--text);
-}
-
-.summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  margin: 0;
-  padding: 0.9rem;
-  border-radius: 0.6rem;
-  background: #00000033;
-  text-align: center;
-}
-
-.summary dt {
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-
-.summary dd {
-  margin: 0.2rem 0 0;
-  font-size: 1.4rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.venn {
-  margin: -0.5rem 0 0;
-}
-
-.venn__title {
-  margin: 0 0 0.5rem;
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.venn__regions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.venn__regions li {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  font-size: 0.9rem;
-}
-
-.venn__count {
-  min-width: 1.6rem;
-  padding: 0.05rem 0.4rem;
-  border-radius: 0.3rem;
-  background: color-mix(in srgb, var(--card-green) 30%, transparent);
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
-
-.venn__label {
-  color: var(--muted);
 }
 
 /* Buttons ---------------------------------------------------------------- */
@@ -165,13 +38,28 @@ h1 {
   cursor: pointer;
 }
 
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .btn--primary {
   background: var(--accent);
   color: #fff;
 }
 
-.btn--primary:hover {
+.btn--primary:not(:disabled):hover {
   filter: brightness(1.1);
+}
+
+.btn--red {
+  background: var(--card-red);
+  color: #fff;
+}
+
+.btn--blue {
+  background: var(--card-blue);
+  color: #fff;
 }
 
 .btn--ghost {
@@ -183,117 +71,6 @@ h1 {
   font-weight: 500;
 }
 
-.btn--ghost:hover {
+.btn--ghost:not(:disabled):hover {
   color: var(--text);
 }
-
-/* Handoff ---------------------------------------------------------------- */
-
-.panel--handoff {
-  align-items: center;
-  text-align: center;
-  gap: 1rem;
-  padding: 3.5rem 1.75rem;
-}
-
-.handoff__eyebrow {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-
-.handoff__player {
-  font-size: 2.6rem;
-}
-
-.panel--handoff .subtitle {
-  margin: 0;
-}
-
-.panel--handoff .btn {
-  margin-top: 0.5rem;
-  width: 100%;
-}
-
-/* Viewing ---------------------------------------------------------------- */
-
-.viewing__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.viewing__actions {
-  display: flex;
-  gap: 0.4rem;
-}
-
-/*
- * The rotating piece is exactly the grid — a square, so it turns inside its own
- * bounding box. The badge hangs outside it, and the margin reserves room for
- * that badge on whichever edge ends up on top.
- */
-.keycard {
-  position: relative;
-  margin: 1.6rem;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.keycard__top {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  margin: 0 0 0.45rem;
-  color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.keycard__top::before,
-.keycard__top::after {
-  content: '';
-  display: inline-block;
-  width: 1.1rem;
-  margin-bottom: 0.2rem;
-  border-top: 1px solid var(--line);
-  vertical-align: middle;
-}
-
-.keycard__top::before {
-  margin-right: 0.4rem;
-}
-
-.keycard__top::after {
-  margin-left: 0.4rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .keycard {
-    transition: none;
-  }
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(var(--grid-size), 1fr);
-  gap: 0.4rem;
-}
-
-.card {
-  aspect-ratio: 1;
-  border-radius: 0.35rem;
-  box-shadow: inset 0 0 0 1px #ffffff14;
-}
-
-.card--red { background: var(--card-red); }
-.card--blue { background: var(--card-blue); }
-.card--green { background: var(--card-green); }
-.card--yellow { background: var(--card-yellow); }
-.card--black { background: var(--card-black); }
