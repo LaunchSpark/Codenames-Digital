@@ -37,6 +37,7 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
           voterCount={view.voterCount}
           variant="phone"
           dimmed={!myClueTurn}
+          keyCard
         />
       )}
     </div>

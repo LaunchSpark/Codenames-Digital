@@ -17,15 +17,23 @@ interface WordGridProps {
   variant: 'tv' | 'phone'
   /** Fades the board when it isn't this player's turn to act. */
   dimmed?: boolean
+  /**
+   * A clue-giver's key card: solid colours, no visible words (they read the
+   * words off the TV). Each tile keeps its word and colour as its label.
+   */
+  keyCard?: boolean
 }
 
 /**
  * The 5×5 board. Colours come straight from the server: a card with
  * `color: null` is drawn as unknown, and nothing here infers the key.
  */
-export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled, variant, dimmed }: WordGridProps) {
+export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled, variant, dimmed, keyCard }: WordGridProps) {
+  const gridClass = ['word-grid', `word-grid--${variant}`, dimmed && 'word-grid--dimmed', keyCard && 'word-grid--key']
+    .filter(Boolean)
+    .join(' ')
   return (
-    <div className={`word-grid word-grid--${variant}${dimmed ? ' word-grid--dimmed' : ''}`}>
+    <div className={gridClass}>
       {cards.map((card, i) => {
         const className = [
           'word',
@@ -41,7 +49,7 @@ export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled,
 
         const body = (
           <>
-            <span className="word__text">{card.word}</span>
+            {!keyCard && <span className="word__text">{card.word}</span>}
             {showPips && !card.revealed && <Pips filled={card.votes} slots={voterCount} />}
           </>
         )
@@ -59,7 +67,13 @@ export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled,
             {body}
           </button>
         ) : (
-          <div key={i} className={className} style={style}>
+          <div
+            key={i}
+            className={className}
+            style={style}
+            role={keyCard ? 'img' : undefined}
+            aria-label={keyCard ? `${card.word}: ${card.color ?? 'unknown'}${card.revealed ? ', picked' : ''}` : undefined}
+          >
             {body}
           </div>
         )
