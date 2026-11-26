@@ -3,7 +3,7 @@ import { Undo2 } from 'lucide-react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { WordGrid } from '../components/WordGrid'
 import { guessesLeftText, TEAM_NAME } from '../components/teams'
-import type { ClientMessage, Phase, Team } from '../shared/protocol'
+import type { CardView, ClientMessage, Phase, Team } from '../shared/protocol'
 import type { PhoneScreenProps } from './types'
 
 export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps) {
@@ -41,7 +41,30 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
           keyCard
         />
       )}
+
+      {view.board && <MyWords cards={view.board} team={you.team} />}
     </div>
+  )
+}
+
+/**
+ * The team's words still to be found, for planning the next clue. Below the
+ * board, so it can shrink as cards are picked without moving anything above.
+ */
+function MyWords({ cards, team }: { cards: CardView[]; team: Team }) {
+  const words = cards.filter((c) => c.color === team && !c.revealed).map((c) => c.word)
+  return (
+    <section className="my-words">
+      <header className="my-words__head">
+        <h2>Your words</h2>
+        <span>{words.length} left</span>
+      </header>
+      <ul className="my-words__list" aria-label="Your words">
+        {words.map((w) => (
+          <li key={w}>{w}</li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

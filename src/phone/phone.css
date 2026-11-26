@@ -159,3 +159,55 @@ select.field__input {
 .turn-slot > .is-hidden {
   visibility: hidden;
 }
+
+/* Clue-giver: the team's words still to find. */
+.my-words {
+  padding: 12px 14px 14px;
+  border: 1px solid var(--team-line, var(--line));
+  border-radius: 12px;
+  background: linear-gradient(160deg, var(--team-tint, var(--panel)), var(--panel) 70%);
+}
+
+.my-words__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.my-words__head h2 {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.my-words__head span {
+  color: var(--team-text, var(--text));
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.my-words__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.my-words__list li {
+  padding: 5px 10px;
+  border: 1px solid var(--team-line, var(--line));
+  border-radius: 6px;
+  background: var(--team-tint, var(--panel));
+  color: var(--team-text, var(--text));
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
