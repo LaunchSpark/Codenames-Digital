@@ -172,6 +172,26 @@ describe('guesser', () => {
   })
 })
 
+describe('whose turn it is', () => {
+  const dimmed = () => document.querySelector('.word-grid')!.classList.contains('word-grid--dimmed')
+
+  it("a guesser's board is lit only while their team is guessing", () => {
+    setup('phone-guesser-guess')
+    expect(dimmed()).toBe(false)
+    cleanup()
+    setup('phone-guesser-waiting')
+    expect(dimmed()).toBe(true)
+  })
+
+  it("a clue-giver's board is lit only while they give the clue", () => {
+    setup('phone-cluegiver-clue')
+    expect(dimmed()).toBe(false)
+    cleanup()
+    setup('phone-cluegiver-waiting')
+    expect(dimmed()).toBe(true)
+  })
+})
+
 describe('game over', () => {
   it('shows the winner, full key and a waiting line', () => {
     const { container } = setup('phone-over')

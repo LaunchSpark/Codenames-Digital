@@ -15,15 +15,17 @@ interface WordGridProps {
   /** Keeps tappable cards visible but inert (e.g. while reconnecting). */
   disabled?: boolean
   variant: 'tv' | 'phone'
+  /** Fades the board when it isn't this player's turn to act. */
+  dimmed?: boolean
 }
 
 /**
  * The 5×5 board. Colours come straight from the server: a card with
  * `color: null` is drawn as unknown, and nothing here infers the key.
  */
-export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled, variant }: WordGridProps) {
+export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled, variant, dimmed }: WordGridProps) {
   return (
-    <div className={`word-grid word-grid--${variant}`}>
+    <div className={`word-grid word-grid--${variant}${dimmed ? ' word-grid--dimmed' : ''}`}>
       {cards.map((card, i) => {
         const className = [
           'word',

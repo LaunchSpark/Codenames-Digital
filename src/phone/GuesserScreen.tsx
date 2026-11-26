@@ -35,6 +35,7 @@ export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
           onTap={myGuess ? (card) => send({ type: 'vote', card }) : undefined}
           disabled={disabled}
           variant="phone"
+          dimmed={!myGuess}
         />
       )}
 

@@ -36,6 +36,7 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
           showPips={phase.name === 'guess'}
           voterCount={view.voterCount}
           variant="phone"
+          dimmed={!myClueTurn}
         />
       )}
     </div>

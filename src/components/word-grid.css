@@ -3,6 +3,13 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--word-gap);
   width: 100%;
+  transition: opacity 200ms ease, filter 200ms ease;
+}
+
+/* Not your turn: fade the board. Opacity only, so nothing moves. */
+.word-grid--dimmed {
+  opacity: 0.4;
+  filter: saturate(0.5);
 }
 
 .word {
