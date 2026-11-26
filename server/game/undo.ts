@@ -1,17 +1,31 @@
-import { GameError, type Board, type ServerState } from './state'
+import type { Team } from '../../src/shared/protocol'
+import { seatOf } from './roster'
+import { GameError, type Board, type Game, type ServerState } from './state'
 
 export interface CommitOptions {
   /**
-   * False for host corrections: not an undo step, and a barrier — earlier moves
-   * can no longer be undone, so undo can never silently revert the correction.
+   * False for host corrections: not a clue-giver undo step, and a barrier —
+   * clue-giver undo can no longer reach earlier moves, so it can never silently
+   * revert the correction. (Host undo still can; see hostUndo.)
    */
   undoable?: boolean
 }
 
-/** Replaces the board, clears votes, and (by default) records the old board for undo. */
-export function commit(s: ServerState, next: Board, { undoable = true }: CommitOptions = {}): ServerState {
-  const game = s.game
-  if (!game) throw new GameError('not-in-lobby', 'No game is running')
+/** The game with `label` logged to the host timeline, snapshotting how it looked before. */
+export function logged(game: Game, label: string): Game {
+  const entry = { label, board: game.board, clueGivers: game.clueGivers, history: game.history }
+  return { ...game, timeline: [...game.timeline, entry] }
+}
+
+/** Replaces the board, clears votes, logs `label`, and (by default) records the old board for undo. */
+export function commit(
+  s: ServerState,
+  next: Board,
+  label: string,
+  { undoable = true }: CommitOptions = {},
+): ServerState {
+  if (!s.game) throw new GameError('not-in-lobby', 'No game is running')
+  const game = logged(s.game, label)
   const history = undoable ? [...game.history, game.board] : []
   return { ...s, game: { ...game, board: next, history, votes: {} } }
 }
@@ -25,6 +39,41 @@ export function undo(s: ServerState, seatId: string): ServerState {
     throw new GameError('not-your-turn', 'Only a clue-giver can undo')
   }
   if (!canUndo(s)) throw new GameError('nothing-to-undo', 'Nothing to undo')
+  const name = seatOf(s, seatId)?.name ?? 'A clue-giver'
   const history = game.history.slice(0, -1)
-  return { ...s, game: { ...game, board: game.history[game.history.length - 1], history, votes: {} } }
+  const board = game.history[game.history.length - 1]
+  return { ...s, game: { ...logged(game, `${name} pressed Undo`), board, history, votes: {} } }
 }
+
+/**
+ * Host undo: steps back through the timeline — clues, reveals, turn ends, the
+ * host's own skips and clue-giver changes, and clue-giver undos. Removed
+ * players stay removed; a restored clue-giver who has since left becomes null,
+ * so the host is asked to pick one.
+ */
+export function hostUndo(s: ServerState, steps: number): ServerState {
+  const game = s.game
+  if (!game) throw new GameError('not-in-lobby', 'No game is running')
+  if (!Number.isInteger(steps) || steps < 1 || steps > game.timeline.length) {
+    throw new GameError('nothing-to-undo', 'Nothing to undo that far back')
+  }
+  const keep = game.timeline.length - steps
+  const entry = game.timeline[keep]
+  const stillHere = (team: Team) => {
+    const id = entry.clueGivers[team]
+    return id && seatOf(s, id)?.team === team ? id : null
+  }
+  return {
+    ...s,
+    game: {
+      ...game,
+      board: entry.board,
+      history: entry.history,
+      clueGivers: { red: stillHere('red'), blue: stillHere('blue') },
+      timeline: game.timeline.slice(0, keep),
+      votes: {},
+    },
+  }
+}
+
+export const timelineLabels = (game: Game): string[] => game.timeline.map((e) => e.label)

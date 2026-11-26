@@ -12,7 +12,7 @@ import {
   startGame,
 } from './rules'
 import { GameError, type ServerState } from './state'
-import { undo } from './undo'
+import { hostUndo, undo } from './undo'
 
 export type Sender = { host: boolean; seatId: string | null }
 
@@ -78,6 +78,8 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
       return { state: skipTurn(s) }
     case 'host:remove-player':
       return { state: settleVotes(removeSeat(s, msg.playerId)) }
+    case 'host:undo':
+      return { state: hostUndo(s, msg.steps) }
   }
 }
 
@@ -99,6 +101,7 @@ const SHAPES: Record<ClientMessage['type'], (m: Record<string, unknown>) => bool
   'host:make-clue-giver': (m) => isString(m.playerId),
   'host:skip-turn': () => true,
   'host:remove-player': (m) => isString(m.playerId),
+  'host:undo': (m) => isNumber(m.steps),
 }
 
 export function parseClientMessage(raw: string): ClientMessage {

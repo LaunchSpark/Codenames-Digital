@@ -69,6 +69,12 @@ export interface GameView {
   endTurnVotes: number
   /** True when there is a move to undo. */
   canUndo: boolean
+  /**
+   * Host TV only (null for everyone else and in the lobby): every move and host
+   * correction this game, oldest first, e.g. "Red clue: OCEAN 2". Undoing back to
+   * just before entry i is `{ type: 'host:undo', steps: timeline.length - i }`.
+   */
+  timeline: string[] | null
   /** e.g. "http://192.168.1.20:3000/" — what the TV's QR code encodes. */
   joinUrl: string
 }
@@ -123,6 +129,8 @@ export type ClientMessage =
   | { type: 'host:make-clue-giver'; playerId: string }
   | { type: 'host:skip-turn' }
   | { type: 'host:remove-player'; playerId: string }
+  /** Step back through the timeline, host corrections included; steps >= 1. */
+  | { type: 'host:undo'; steps: number }
 
 export const SEAT_STORAGE_KEY = 'codenames-seat'
 export const WS_PATH = '/ws'

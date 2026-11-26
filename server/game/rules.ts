@@ -3,7 +3,7 @@ import { BOARD_CELLS } from '../../src/shared/protocol'
 import { newBoard, otherTeam } from './board'
 import { isConnected, pickClueGivers, seatOf } from './roster'
 import { GameError, type Board, type Game, type Seat, type ServerState } from './state'
-import { commit, type CommitOptions } from './undo'
+import { commit, logged, type CommitOptions } from './undo'
 
 const CLUE_WORD = /^[\p{L}]+(-[\p{L}]+)*$/u
 const MIN_PER_TEAM = 2
@@ -14,6 +14,9 @@ function requireGame(s: ServerState): Game {
 }
 
 const withPhase = (board: Board, phase: Phase): Board => ({ ...board, phase })
+
+/** "Red" / "Blue", for timeline labels. */
+const teamName = (team: Team) => (team === 'red' ? 'Red' : 'Blue')
 
 export function startGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
   if (s.game) throw new GameError('not-in-lobby', 'A game is already running')
@@ -32,7 +35,7 @@ function requireEnoughPlayers(s: ServerState) {
 /** Picks clue-givers and deals a fresh board, keeping the roster. */
 export function dealGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
   const { state, clueGivers } = pickClueGivers(s)
-  return { ...state, game: { board: newBoard(words, rand), history: [], clueGivers, votes: {} } }
+  return { ...state, game: { board: newBoard(words, rand), history: [], timeline: [], clueGivers, votes: {} } }
 }
 
 export function guessersOf(s: ServerState, team: Team): Seat[] {
@@ -71,11 +74,15 @@ export function giveClue(s: ServerState, seatId: string, rawWord: string, number
     throw new GameError('invalid-clue', "The clue can't be a word on the board")
   }
   const clue = { team: phase.team, word, number }
-  return commit(s, {
-    ...game.board,
-    clues: [...game.board.clues, clue],
-    phase: { name: 'guess', team: phase.team, clue, guessesLeft: number + 1, guessesMade: 0 },
-  })
+  return commit(
+    s,
+    {
+      ...game.board,
+      clues: [...game.board.clues, clue],
+      phase: { name: 'guess', team: phase.team, clue, guessesLeft: number + 1, guessesMade: 0 },
+    },
+    `${teamName(phase.team)} clue: ${word.toUpperCase()} ${number}`,
+  )
 }
 
 function requireVoter(s: ServerState, seatId: string): Game {
@@ -127,27 +134,32 @@ export function reveal(s: ServerState, card: number): ServerState {
   const board: Board = { ...game.board, cards }
   const color = cards[card].color
   const guessing = phase.team
+  const label = `${teamName(guessing)} revealed ${cards[card].word.toUpperCase()} (${color})`
+  const wins = (team: Team) => `${label} — ${teamName(team)} wins`
 
   if (color === 'assassin') {
-    return commit(s, withPhase(board, { name: 'over', winner: otherTeam(guessing), reason: 'assassin' }))
+    const winner = otherTeam(guessing)
+    return commit(s, withPhase(board, { name: 'over', winner, reason: 'assassin' }), wins(winner))
   }
   for (const team of [guessing, otherTeam(guessing)]) {
     if (remaining(board, team) === 0) {
-      return commit(s, withPhase(board, { name: 'over', winner: team, reason: 'cards' }))
+      return commit(s, withPhase(board, { name: 'over', winner: team, reason: 'cards' }), wins(team))
     }
   }
   if (color === guessing) {
     const guessesLeft = phase.guessesLeft - 1
     if (guessesLeft > 0) {
-      return commit(s, withPhase(board, { ...phase, guessesLeft, guessesMade: phase.guessesMade + 1 }))
+      return commit(s, withPhase(board, { ...phase, guessesLeft, guessesMade: phase.guessesMade + 1 }), label)
     }
   }
-  return commit(s, withPhase(board, { name: 'clue', team: otherTeam(guessing) }))
+  return commit(s, withPhase(board, { name: 'clue', team: otherTeam(guessing) }), label)
 }
 
 /** Host correction: hand play to the other team. */
 export function skipTurn(s: ServerState): ServerState {
-  return endTurn(s, { undoable: false })
+  const phase = s.game?.board.phase
+  const team = phase && (phase.name === 'clue' || phase.name === 'guess') ? phase.team : null
+  return endTurn(s, { undoable: false, label: team ? `Host skipped ${teamName(team)}'s turn` : 'Host skipped the turn' })
 }
 
 /** Host correction: give a team's key to another player for the rest of this game. */
@@ -155,7 +167,11 @@ export function makeClueGiver(s: ServerState, seatId: string): ServerState {
   const seat = seatOf(s, seatId)
   if (!seat) throw new GameError('unknown-player', 'No such player')
   const game = requireGame(s)
-  return { ...s, game: { ...game, clueGivers: { ...game.clueGivers, [seat.team]: seatId }, votes: {} } }
+  const label = `Host made ${seat.name} ${teamName(seat.team)}'s clue-giver`
+  return {
+    ...s,
+    game: { ...logged(game, label), clueGivers: { ...game.clueGivers, [seat.team]: seatId }, votes: {} },
+  }
 }
 
 export function newGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
@@ -168,9 +184,10 @@ export function backToLobby(s: ServerState): ServerState {
   return { ...s, game: null }
 }
 
-export function endTurn(s: ServerState, options?: CommitOptions): ServerState {
+export function endTurn(s: ServerState, { label, ...options }: CommitOptions & { label?: string } = {}): ServerState {
   const game = requireGame(s)
   const { phase } = game.board
   if (phase.name !== 'clue' && phase.name !== 'guess') return s
-  return commit(s, withPhase(game.board, { name: 'clue', team: otherTeam(phase.team) }), options)
+  const next = withPhase(game.board, { name: 'clue', team: otherTeam(phase.team) })
+  return commit(s, next, label ?? `${teamName(phase.team)} ended their turn`, options)
 }

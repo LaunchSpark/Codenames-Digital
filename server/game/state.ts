@@ -30,10 +30,21 @@ export interface Board {
   clues: Clue[]
 }
 
+/** What the game looked like just before one logged action. */
+export interface TimelineEntry {
+  /** Describes the action that came after this snapshot, e.g. "Red clue: OCEAN 2". */
+  label: string
+  board: Board
+  clueGivers: Record<Team, string | null>
+  history: Board[]
+}
+
 export interface Game {
   board: Board
-  /** Prior Boards, most recent last. */
+  /** Prior Boards for clue-giver undo, most recent last. */
   history: Board[]
+  /** Every game move and host correction this game, oldest first — for host undo. */
+  timeline: TimelineEntry[]
   /** Outside Board on purpose: undo never reverts a host reassignment. */
   clueGivers: Record<Team, string | null>
   /** seatId → vote; cleared on every Board change. */

@@ -87,7 +87,7 @@
 **Interfaces:**
 - Consumes: Task 1.
 - Produces:
-  - `FIXTURES: Record<FixtureName, { view: GameView; you: You }>` with `FixtureName` = `'tv-lobby' | 'tv-lobby-host' | 'tv-clue' | 'tv-guess' | 'tv-guess-host' | 'tv-needs-clue-giver' | 'tv-over' | 'phone-spectator-lobby' | 'phone-spectator-midgame' | 'phone-lobby' | 'phone-cluegiver-clue' | 'phone-cluegiver-waiting' | 'phone-guesser-guess' | 'phone-guesser-waiting' | 'phone-over'`. Built from a `baseView()` helper with real words; guesser/TV fixtures have `color: null` on unrevealed cards, clue-giver and `over` fixtures have all colours.
+  - `FIXTURES: Record<FixtureName, { view: GameView; you: You }>` with `FixtureName` = `'tv-lobby' | 'tv-lobby-host' | 'tv-clue' | 'tv-guess' | 'tv-guess-host' | 'tv-needs-clue-giver' | 'tv-over' | 'phone-spectator-lobby' | 'phone-spectator-midgame' | 'phone-lobby' | 'phone-cluegiver-clue' | 'phone-cluegiver-waiting' | 'phone-guesser-guess' | 'phone-guesser-waiting' | 'phone-over'`. Built from a `baseView()` helper with real words (`timeline: null` except in host TV fixtures); guesser/TV fixtures have `color: null` on unrevealed cards, clue-giver and `over` fixtures have all colours.
   - `useGame(client: 'tv' | 'player'): Snapshot & { send(msg: ClientMessage): void }` — if `new URLSearchParams(location.search).get('mock')` names a fixture, returns it with `status: 'open'` and a `send` that `console.info`s; otherwise opens one `createConnection` for the component's lifetime (closed on unmount; StrictMode-safe).
   - `App` renders `<TvApp/>` when `location.pathname.startsWith('/tv')`, else `<PhoneApp/>` (placeholders until Tasks 4–5).
 
@@ -135,7 +135,7 @@
   - **Lobby** (phase `lobby`): mode picker (VS selected; Coop disabled + "Coming soon"); QR from `QRCode.toDataURL(view.joinUrl)` as an `<img alt="Join QR code">` plus the URL as text; red and blue rosters in order with a connected/disconnected dot; host-only **Start** button, disabled with the hint "Each team needs at least 2 players" unless both teams have ≥ 2 players.
   - **BoardScreen** (`clue`/`guess`): whose turn + phase ("Red is thinking of a clue" / "Red: OCEAN 3 — 2 guesses left"); remaining per team; `WordGrid variant="tv" showPips={phase.name==='guess'}`; end-turn pips ("End turn ●●○"); clue history list (newest first, team-coloured); a small QR in a corner so late joiners can scan.
   - **GameOver** (`over`): winner + reason ("Blue found all their agents" / "Red hit the assassin"); full key via `WordGrid`; host-only **New game** (`host:new-game`) and **Back to lobby** (`host:lobby`).
-  - **HostMenu** (host only, in `clue`/`guess`): a toggle button opening a panel with **Make clue-giver** (per team, pick a player → `host:make-clue-giver`), **Skip turn** (`host:skip-turn`), **Remove player** (pick → confirm → `host:remove-player`). Opens itself with "Pick a new clue-giver for Red" when that team's `clueGiverId` is null mid-game.
+  - **HostMenu** (host only, in `clue`/`guess`): a toggle button opening a panel with **Make clue-giver** (per team, pick a player → `host:make-clue-giver`), **Skip turn** (`host:skip-turn`), **Remove player** (pick → confirm → `host:remove-player`). Opens itself with "Pick a new clue-giver for Red" when that team's `clueGiverId` is null mid-game. Also an **Undo** section (contract change 2026-11-26): an "Undo last" button (`host:undo`, `steps: 1`, disabled when `view.timeline` is empty) and the recent moves from `view.timeline`, newest first; tapping one confirms ("Go back to before: Red clue: OCEAN 2?") and sends `host:undo` with `steps = timeline.length - index`.
 
 - [ ] **Step 1: Write the failing tests** (render with fixtures):
   - `lobby shows the QR and join URL` (`tv-lobby`) — img with alt "Join QR code" appears (await), URL text present.
@@ -143,6 +143,7 @@
   - `start is host-only` — absent in `tv-lobby`, present in `tv-lobby-host`; disabled when a team has < 2 players.
   - `guess phase shows the clue and pips` (`tv-guess`) — clue word and "guesses left" text; pip elements present.
   - `host menu is host-only and sends skip-turn` (`tv-guess-host`) — open menu, click Skip turn → `send` called with `{ type: 'host:skip-turn' }`; not rendered for `tv-guess`.
+  - `host undo jumps back to a chosen move` (`tv-guess-host` with `timeline: ['Red clue: OCEAN 2', 'Red revealed APPLE (red)']`) — tapping the older entry and confirming sends `{ type: 'host:undo', steps: 2 }`.
   - `host menu prompts for a missing clue-giver` (`tv-needs-clue-giver`) — prompt text visible without clicking; choosing a player sends `host:make-clue-giver` with that id.
   - `game over shows the winner and host controls` — `tv-over` rendered with `you = { kind: 'tv', host: true }` shows winner text and both buttons; with `host: false`, neither button.
 - [ ] **Step 2:** Run `npx vitest run src/tv` — Expected: FAIL.
