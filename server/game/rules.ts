@@ -2,7 +2,7 @@ import type { Phase, Team } from '../../src/shared/protocol'
 import { BOARD_CELLS } from '../../src/shared/protocol'
 import { newBoard, otherTeam } from './board'
 import { assignTeam, isConnected, pickClueGivers, seatOf } from './roster'
-import { GameError, type Board, type Game, type Seat, type ServerState } from './state'
+import { GameError, type Board, type Game, type Seat, type ServerState, type Vote } from './state'
 import { commit, logged, type CommitOptions } from './undo'
 
 const CLUE_WORD = /^[\p{L}]+(-[\p{L}]+)*$/u
@@ -91,19 +91,29 @@ function requireVoter(s: ServerState, seatId: string): Game {
   return game
 }
 
-function withVote(s: ServerState, game: Game, seatId: string, vote: number | 'end' | null): ServerState {
+function withVote(s: ServerState, game: Game, seatId: string, vote: Vote | null): ServerState {
   const votes = { ...game.votes }
-  if (vote === null) delete votes[seatId]
+  if (vote === null || vote.length === 0) delete votes[seatId]
   else votes[seatId] = vote
   return { ...s, game: { ...game, votes } }
 }
 
+/** The cards a vote backs; none for an end-turn vote. */
+export const cardsOf = (vote: Vote | undefined): number[] => (Array.isArray(vote) ? vote : [])
+
+/**
+ * Toggles a card in the guesser's votes. They may back up to guessesLeft
+ * cards; tapping a new one past that moves their oldest vote onto it.
+ */
 export function castVote(s: ServerState, seatId: string, card: number): ServerState {
   const game = requireVoter(s, seatId)
+  const { phase } = game.board
   if (!Number.isInteger(card) || card < 0 || card >= BOARD_CELLS || game.board.cards[card]?.revealed !== false) {
     throw new GameError('invalid-vote', "That card can't be picked")
   }
-  const next = game.votes[seatId] === card ? null : card
+  const mine = cardsOf(game.votes[seatId])
+  const limit = phase.name === 'guess' ? phase.guessesLeft : 1
+  const next = mine.includes(card) ? mine.filter((c) => c !== card) : [...mine, card].slice(-limit)
   return settleVotes(withVote(s, game, seatId, next))
 }
 
@@ -117,13 +127,28 @@ export function castEndVote(s: ServerState, seatId: string): ServerState {
   return settleVotes(withVote(s, game, seatId, next))
 }
 
-/** Reveals or ends the turn when every connected guesser agrees. */
+/**
+ * Ends the turn when every connected guesser votes to, or reveals each card
+ * they all back. A reveal that keeps the turn going keeps everyone's other votes.
+ */
 export function settleVotes(s: ServerState): ServerState {
   const ids = voters(s)
-  if (!s.game || ids.length === 0) return s
-  const first = s.game.votes[ids[0]]
-  if (first === undefined || !ids.every((id) => s.game!.votes[id] === first)) return s
-  return first === 'end' ? endTurn(s) : reveal(s, first)
+  const game = s.game
+  if (!game || ids.length === 0) return s
+  const all = ids.map((id) => game.votes[id])
+  if (all.every((v) => v === 'end')) return endTurn(s)
+  const agreed = cardsOf(all[0]).find((card) => all.every((v) => cardsOf(v).includes(card)))
+  if (agreed === undefined) return s
+
+  const after = reveal(s, agreed)
+  const phase = after.game?.board.phase
+  if (phase?.name !== 'guess') return after
+  const votes: Record<string, Vote> = {}
+  for (const [id, vote] of Object.entries(game.votes)) {
+    const kept = vote === 'end' ? vote : vote.filter((c) => c !== agreed).slice(-phase.guessesLeft)
+    if (kept.length > 0) votes[id] = kept
+  }
+  return settleVotes({ ...after, game: { ...after.game!, votes } })
 }
 
 export function reveal(s: ServerState, card: number): ServerState {

@@ -1,10 +1,12 @@
-import { ArrowLeftRight, ScanLine, Shuffle, UsersRound } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowLeftRight, ScanLine, Shuffle, UsersRound, X } from 'lucide-react'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { LobbyBrand } from '../components/LobbyBrand'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader } from '../components/ui/card'
 import { otherTeam, TEAM_NAME } from '../components/teams'
-import type { ClientMessage, GameView, Team, You } from '../shared/protocol'
+import type { ClientMessage, GameView, PlayerInfo, Team, You } from '../shared/protocol'
 import { JoinQr } from './JoinQr'
 import '../components/lobby.css'
 
@@ -19,6 +21,8 @@ export interface TvScreenProps {
 const MIN_PER_TEAM = 2
 
 export function Lobby({ view, you, send, disabled }: TvScreenProps) {
+  /** Player the host is about to kick, awaiting confirmation. */
+  const [removing, setRemoving] = useState<PlayerInfo | null>(null)
   const ready = (['red', 'blue'] as Team[]).every((t) => view.teams[t].players.length >= MIN_PER_TEAM)
   const playerCount = view.teams.red.players.length + view.teams.blue.players.length
 
@@ -26,15 +30,14 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
     <div className="tv-lobby">
       <header className="tv-lobby__header">
         <LobbyBrand />
-        <div className="mode-picker" role="group" aria-label="Mode">
-          <Button type="button" variant="secondary" aria-pressed="true">VS</Button>
-          <Button type="button" variant="ghost" disabled>Coop <Badge variant="outline">Coming soon</Badge></Button>
+        <div className="tv-lobby__header-end">
+          <Badge variant="outline" className="tv-lobby__count"><UsersRound aria-hidden="true" /> {playerCount} {playerCount === 1 ? 'player' : 'players'} joined</Badge>
+          <div className="mode-picker" role="group" aria-label="Mode">
+            <Button type="button" variant="secondary" aria-pressed="true">VS</Button>
+            <Button type="button" variant="ghost" disabled>Coop <Badge variant="outline">Coming soon</Badge></Button>
+          </div>
         </div>
       </header>
-      <div className="tv-lobby__intro">
-        <div><span className="lobby-eyebrow">GATHER YOUR PEOPLE</span><h1>Every word is a possibility.</h1></div>
-        <Badge variant="outline"><UsersRound aria-hidden="true" /> {playerCount} {playerCount === 1 ? 'player' : 'players'} joined</Badge>
-      </div>
       <div className="tv-lobby__body">
         <Card className="tv-join-card">
           <CardHeader><h2><ScanLine aria-hidden="true" /> Take a seat.</h2><p>Scan with your phone to join.</p></CardHeader>
@@ -45,7 +48,7 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
           </CardContent>
         </Card>
         {(['red', 'blue'] as Team[]).map((t) => (
-          <Roster key={t} team={t} view={view} host={you.host} send={send} disabled={disabled} />
+          <Roster key={t} team={t} view={view} host={you.host} send={send} disabled={disabled} onRemove={setRemoving} />
         ))}
       </div>
       <footer className="tv-lobby__footer">
@@ -57,6 +60,19 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
           <Button type="button" disabled={!ready || disabled} onClick={() => send({ type: 'host:start' })}>Start</Button>
         </div>}
       </footer>
+      {removing && (
+        <ConfirmDialog
+          message={`Remove ${removing.name} from the game?`}
+          confirmLabel="Yes, remove"
+          disabled={disabled}
+          onConfirm={() => {
+            // The kicked phone drops back to the join form, name empty.
+            send({ type: 'host:remove-player', playerId: removing.id })
+            setRemoving(null)
+          }}
+          onCancel={() => setRemoving(null)}
+        />
+      )}
     </div>
   )
 }
@@ -68,9 +84,11 @@ interface RosterProps {
   host: boolean
   send: (m: ClientMessage) => void
   disabled?: boolean
+  /** Host: ask to kick this player. */
+  onRemove: (p: PlayerInfo) => void
 }
 
-function Roster({ team, view, host, send, disabled }: RosterProps) {
+function Roster({ team, view, host, send, disabled, onRemove }: RosterProps) {
   const { players } = view.teams[team]
   return (
     <Card className={`team-card tv-team-card team-card--${team}`}>
@@ -92,6 +110,11 @@ function Roster({ team, view, host, send, disabled }: RosterProps) {
                 title={`Move to ${TEAM_NAME[otherTeam(team)]}`} disabled={disabled}
                 onClick={() => send({ type: 'host:move-player', playerId: p.id, team: otherTeam(team) })}>
                 <ArrowLeftRight aria-hidden="true" />
+              </Button>}
+              {host && <Button type="button" variant="ghost" size="icon" className="lobby-roster__move lobby-roster__remove"
+                aria-label={`Remove ${p.name}`} title="Remove from the game" disabled={disabled}
+                onClick={() => onRemove(p)}>
+                <X aria-hidden="true" />
               </Button>}
             </li>
           ))}

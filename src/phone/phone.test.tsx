@@ -194,9 +194,39 @@ describe('guesser', () => {
 
   it('my end-turn vote is highlighted', () => {
     const g = game('phone-guesser-guess')
-    if (g.you!.kind === 'player') g.you!.vote = 'end'
+    if (g.you!.kind === 'player') g.you!.votedEnd = true
     render(<PhoneScreen game={g} send={vi.fn()} />)
     expect(button(/End turn/).getAttribute('aria-pressed')).toBe('true')
+  })
+})
+
+describe('kicked', () => {
+  it('goes back to the join form with an empty name', () => {
+    const { rerender } = setup('phone-lobby')
+    rerender(game('phone-spectator-lobby')) // the host removed this seat
+    expect(nameInput().value).toBe('')
+    expect(button('Join Red').disabled).toBe(true)
+  })
+})
+
+describe('scroll position', () => {
+  it('jumps to the top when the screen changes, not when the same screen updates', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const { rerender } = setup('phone-spectator-lobby')
+    scrollTo.mockClear()
+
+    rerender(game('phone-lobby')) // joined: a new screen
+    expect(scrollTo).toHaveBeenCalledWith(0, 0)
+    scrollTo.mockClear()
+
+    const lobby = game('phone-lobby')
+    lobby.view!.teams.blue.players = lobby.view!.teams.blue.players.slice(1) // someone left
+    rerender(lobby)
+    expect(scrollTo).not.toHaveBeenCalled()
+
+    rerender(game('phone-guesser-guess')) // game started
+    expect(scrollTo).toHaveBeenCalledWith(0, 0)
+    scrollTo.mockRestore()
   })
 })
 

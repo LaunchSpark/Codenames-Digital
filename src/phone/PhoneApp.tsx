@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Banner } from '../components/Banner'
 import { WordGrid } from '../components/WordGrid'
 import { otherTeam, TEAM_NAME } from '../components/teams'
@@ -22,15 +23,33 @@ export function PhoneScreen({ game, send }: { game: Snapshot; send: (m: ClientMe
   const disabled = status !== 'open'
 
   let screen = null
+  let screenName = 'connecting'
   if (view && you?.kind === 'spectator') {
+    screenName = 'join'
     screen = <JoinForm view={view} send={send} disabled={disabled} />
   } else if (view && you?.kind === 'player') {
     const props: PhoneScreenProps = { view, you, send, disabled }
-    if (view.phase.name === 'over') screen = <PhoneOver {...props} />
-    else if (view.phase.name === 'lobby') screen = <PhoneLobby {...props} />
-    else if (you.role === 'clue-giver') screen = <ClueGiverScreen {...props} />
-    else screen = <GuesserScreen {...props} />
+    if (view.phase.name === 'over') {
+      screenName = 'over'
+      screen = <PhoneOver {...props} />
+    } else if (view.phase.name === 'lobby') {
+      screenName = 'lobby'
+      screen = <PhoneLobby {...props} />
+    } else if (you.role === 'clue-giver') {
+      screenName = 'clue-giver'
+      screen = <ClueGiverScreen {...props} />
+    } else {
+      screenName = 'guesser'
+      screen = <GuesserScreen {...props} />
+    }
   }
+
+  // A new screen starts at the top: otherwise scrolling down to tap Join
+  // leaves the lobby (and then the game) scrolled down. Updates within one
+  // screen (votes, players coming and going) never move the page.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [screenName])
 
   return (
     <main className="app phone">

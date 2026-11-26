@@ -106,18 +106,18 @@ button.word:not(:disabled):active {
 /* Sizes ------------------------------------------------------------------ */
 
 .word-grid--tv {
-  --word-gap: 0.8vw;
-  --word-pad: 0.6vw;
-  --word-radius: 0.6vw;
-  --pip-size: 1.25vw;
-  --pip-gap: 0.5vw;
+  --word-gap: calc(0.8 * var(--tvu));
+  --word-pad: calc(0.6 * var(--tvu));
+  --word-radius: calc(0.6 * var(--tvu));
+  --pip-size: calc(1.25 * var(--tvu));
+  --pip-gap: calc(0.5 * var(--tvu));
 }
 
 .word-grid--tv .word {
-  min-height: 7.5vw;
-  /* 2.2vw, shrunk only as far as needed to fit the longest unbroken run
-     (--chars) across a cell: ~12.8vw of room at ~0.65em per capital. */
-  font-size: min(2.2vw, calc(19vw / var(--chars, 1)));
+  min-height: calc(7.5 * var(--tvu));
+  /* 2.2tvu, shrunk only as far as needed to fit the longest unbroken run
+     (--chars) across a cell: ~12.8tvu of room at ~0.65em per capital. */
+  font-size: min(calc(2.2 * var(--tvu)), calc(19 * var(--tvu) / var(--chars, 1)));
 }
 
 .word-grid--phone {
@@ -143,7 +143,7 @@ button.word:not(:disabled):active {
 }
 
 .word-grid--key .word {
-  min-height: 3.2rem;
+  min-height: 2.5rem;
   border: 0;
 }
 

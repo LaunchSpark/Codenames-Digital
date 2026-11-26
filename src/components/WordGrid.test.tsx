@@ -126,13 +126,12 @@ describe('WordGrid', () => {
     expect(button.disabled).toBe(true)
   })
 
-  it('marks my vote', () => {
+  it('marks my votes', () => {
     const cards = Array.from({ length: 6 }, () => card())
     const { container } = render(
-      <WordGrid cards={cards} showPips voterCount={2} myVote={4} variant="phone" />,
+      <WordGrid cards={cards} showPips voterCount={2} myVotes={[4, 1]} variant="phone" />,
     )
     const marked = cells(container).filter((c) => c.classList.contains('word--mine'))
-    expect(marked).toHaveLength(1)
-    expect(cells(container).indexOf(marked[0])).toBe(4)
+    expect(marked.map((c) => cells(container).indexOf(c))).toEqual([1, 4])
   })
 })

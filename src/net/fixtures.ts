@@ -75,8 +75,8 @@ const PLAYERS: Record<Team, PlayerInfo[]> = {
   ],
 }
 
-const ANA: You = { kind: 'player', id: 'p1', team: 'red', role: 'clue-giver', vote: null }
-const BEN: You = { kind: 'player', id: 'p2', team: 'red', role: 'guesser', vote: null }
+const ANA: You = { kind: 'player', id: 'p1', team: 'red', role: 'clue-giver', votes: [], votedEnd: false }
+const BEN: You = { kind: 'player', id: 'p2', team: 'red', role: 'guesser', votes: [], votedEnd: false }
 
 const CLUES: Clue[] = [
   { team: 'red', word: 'ANIMAL', number: 2 },
@@ -221,7 +221,7 @@ export const FIXTURES: Record<FixtureName, Fixture> = {
   'phone-lobby': { view: lobbyView(), you: { ...BEN, role: null } },
   'phone-cluegiver-clue': { view: redThinking(true), you: ANA },
   'phone-cluegiver-waiting': { view: oceanGuess(true), you: ANA },
-  'phone-guesser-guess': { view: oceanGuess(), you: { ...BEN, vote: 9 } },
+  'phone-guesser-guess': { view: oceanGuess(), you: { ...BEN, votes: [9] } },
   'phone-guesser-waiting': { view: redThinking(), you: BEN },
   'phone-over': { view: blueWinsByAssassin(), you: BEN },
 }

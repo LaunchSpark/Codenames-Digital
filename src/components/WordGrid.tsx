@@ -8,8 +8,8 @@ interface WordGridProps {
   showPips: boolean
   /** Pip slots per card. */
   voterCount: number
-  /** This device's own vote, highlighted. */
-  myVote?: number | 'end' | null
+  /** Cards this device is voting for, highlighted. */
+  myVotes?: readonly number[]
   /** Makes unrevealed cards tappable. */
   onTap?: (index: number) => void
   /** Keeps tappable cards visible but inert (e.g. while reconnecting). */
@@ -28,7 +28,7 @@ interface WordGridProps {
  * The 5×5 board. Colours come straight from the server: a card with
  * `color: null` is drawn as unknown, and nothing here infers the key.
  */
-export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled, variant, dimmed, keyCard }: WordGridProps) {
+export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, disabled, variant, dimmed, keyCard }: WordGridProps) {
   const gridClass = ['word-grid', `word-grid--${variant}`, dimmed && 'word-grid--dimmed', keyCard && 'word-grid--key']
     .filter(Boolean)
     .join(' ')
@@ -39,7 +39,7 @@ export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled,
           'word',
           `word--${card.color ?? 'unknown'}`,
           card.revealed && 'word--revealed',
-          myVote === i && 'word--mine',
+          myVotes.includes(i) && 'word--mine',
         ]
           .filter(Boolean)
           .join(' ')
@@ -60,7 +60,7 @@ export function WordGrid({ cards, showPips, voterCount, myVote, onTap, disabled,
             type="button"
             className={className}
             style={style}
-            aria-pressed={myVote === i}
+            aria-pressed={myVotes.includes(i)}
             disabled={disabled}
             onClick={() => onTap(i)}
           >

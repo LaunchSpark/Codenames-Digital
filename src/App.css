@@ -32,6 +32,9 @@
 
 .app {
   min-height: 100vh;
+  /* dvh tracks the visible area; 100vh includes space behind mobile browser
+     bars, which made every phone screen scroll a little. */
+  min-height: 100dvh;
   padding: 1.5rem;
   background: var(--bg);
   color: var(--text);

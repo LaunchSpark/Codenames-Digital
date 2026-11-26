@@ -86,6 +86,22 @@ describe('Lobby', () => {
     expect(send).toHaveBeenCalledWith({ type: 'host:shuffle-teams' })
   })
 
+  it('host can kick a lobby player after confirming', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    const send = renderLobby(view, you)
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Ben' }))
+    expect(send).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog', { name: 'Remove Ben from the game?' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, remove' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:remove-player', playerId: 'p2' })
+  })
+
+  it('only the host can kick', () => {
+    const { view, you } = fixture('tv-lobby')
+    renderLobby(view, you)
+    expect(screen.queryByRole('button', { name: 'Remove Ben' })).toBeNull()
+  })
+
   it('team tools are host-only', () => {
     const { view, you } = fixture('tv-lobby')
     renderLobby(view, you)

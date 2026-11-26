@@ -1,6 +1,6 @@
 import type { CardView, GameView, Team, TeamView, You } from '../../src/shared/protocol'
 import { isConnected, seatOf } from './roster'
-import { remaining, voters } from './rules'
+import { cardsOf, remaining, voters } from './rules'
 import type { ServerState } from './state'
 import { canUndo, timelineLabels } from './undo'
 
@@ -22,7 +22,8 @@ function youFor(s: ServerState, viewer: Viewer): You {
   if (!seat) return { kind: 'spectator' }
   const game = s.game
   const role = !game ? null : game.clueGivers[seat.team] === seat.id ? 'clue-giver' : 'guesser'
-  return { kind: 'player', id: seat.id, team: seat.team, role, vote: game?.votes[seat.id] ?? null }
+  const vote = game?.votes[seat.id]
+  return { kind: 'player', id: seat.id, team: seat.team, role, votes: cardsOf(vote), votedEnd: vote === 'end' }
 }
 
 /** Builds what one device may see. The only place hidden colours are filtered. */
@@ -37,7 +38,7 @@ export function viewFor(s: ServerState, viewer: Viewer, joinUrl: string): { view
         word: card.word,
         revealed: card.revealed,
         color: card.revealed || key ? card.color : null,
-        votes: votes.filter((v) => v === i).length,
+        votes: votes.filter((v) => cardsOf(v).includes(i)).length,
       }))
     : null
 

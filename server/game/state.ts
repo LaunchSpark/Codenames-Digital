@@ -39,6 +39,8 @@ export interface TimelineEntry {
   history: Board[]
 }
 
+export type Vote = number[] | 'end'
+
 export interface Game {
   board: Board
   /** Prior Boards for clue-giver undo, most recent last. */
@@ -47,8 +49,11 @@ export interface Game {
   timeline: TimelineEntry[]
   /** Outside Board on purpose: undo never reverts a host reassignment. */
   clueGivers: Record<Team, string | null>
-  /** seatId → vote; cleared on every Board change. */
-  votes: Record<string, number | 'end'>
+  /**
+   * seatId → the cards they back (oldest first, at most guessesLeft) or 'end'.
+   * Cleared on every Board change, except a reveal that keeps the turn going.
+   */
+  votes: Record<string, Vote>
 }
 
 export interface ServerState {

@@ -80,8 +80,8 @@ describe('viewFor', () => {
 
   it('describes the viewer', () => {
     const s = castVote(guess(), 'bob', 3)
-    expect(viewFor(s, player('bob'), URL).you).toEqual({ kind: 'player', id: 'bob', team: 'red', role: 'guesser', vote: 3 })
-    expect(viewFor(s, player('ann'), URL).you).toMatchObject({ role: 'clue-giver', vote: null })
+    expect(viewFor(s, player('bob'), URL).you).toEqual({ kind: 'player', id: 'bob', team: 'red', role: 'guesser', votes: [3], votedEnd: false })
+    expect(viewFor(s, player('ann'), URL).you).toMatchObject({ role: 'clue-giver', votes: [], votedEnd: false })
     expect(viewFor(lobby(), player('ann'), URL).you).toMatchObject({ role: null })
     expect(viewFor(s, { kind: 'tv', host: true }, URL).you).toEqual({ kind: 'tv', host: true })
   })

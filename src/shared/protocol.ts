@@ -88,8 +88,10 @@ export type You =
       team: Team
       /** null in lobby. */
       role: 'clue-giver' | 'guesser' | null
-      /** This player's own current vote. */
-      vote: number | 'end' | null
+      /** Cards this player is voting for, oldest first (the next to move when out of votes). */
+      votes: number[]
+      /** This player is voting to end the turn (never alongside card votes). */
+      votedEnd: boolean
     }
 
 export type ErrorCode =
@@ -118,9 +120,13 @@ export type ClientMessage =
   | { type: 'join'; name: string; team: Team }
   /** Active clue-giver, during their team's 'clue' phase. */
   | { type: 'clue'; word: string; number: number }
-  /** Guesser on the guessing team. Same card again clears the vote. */
+  /**
+   * Guesser on the guessing team. Toggles this card in their votes; they may
+   * back up to guessesLeft cards, and a new card past that replaces their oldest.
+   * Clears an end-turn vote.
+   */
   | { type: 'vote'; card: number }
-  /** Guesser; toggles their end-turn vote. Needs guessesMade >= 1. */
+  /** Guesser; toggles their end-turn vote, dropping any card votes. Needs guessesMade >= 1. */
   | { type: 'vote-end' }
   /** Either current clue-giver. */
   | { type: 'undo' }

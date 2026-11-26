@@ -82,7 +82,7 @@ describe('dispatch', () => {
     let s = run(startRed(), as('ann'), { type: 'clue', word: 'ocean', number: 2 }).state
     expect(s.game!.board.phase.name).toBe('guess')
     s = run(s, as('bob'), { type: 'vote', card: 4 }).state
-    expect(s.game!.votes).toEqual({ bob: 4 })
+    expect(s.game!.votes).toEqual({ bob: [4] })
     s = run(s, as('dee'), { type: 'undo' }).state
     expect(s.game!.board.phase.name).toBe('clue')
   })
