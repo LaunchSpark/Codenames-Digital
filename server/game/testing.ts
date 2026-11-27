@@ -17,13 +17,16 @@ export function codeOf(fn: () => unknown) {
   return null
 }
 
+/** Picture ids for picture-deck tests (more than one board's worth). */
+export const PICTURES: readonly string[] = Array.from({ length: 30 }, (_, i) => `card-${i}`)
+
 /** The standard test table: red ann/bob/cy, blue dee/eve. */
 export const lobby = () => lobbyWith({ red: ['ann', 'bob', 'cy'], blue: ['dee', 'eve'] })
 
 /** A started game where red goes first (red: ann gives clues, bob + cy guess; blue: dee gives clues). */
 export function startRed(s: ServerState = lobby(), from = 1): ServerState {
   for (let seed = from; ; seed++) {
-    const started = startGame(s, WORDS, seededRandom(seed))
+    const started = startGame(s, WORDS, seededRandom(seed), PICTURES)
     if (started.game!.board.startingTeam === 'red') return started
   }
 }

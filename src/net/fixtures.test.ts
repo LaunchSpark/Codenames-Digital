@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { BOARD_CELLS } from '../shared/protocol'
 import { FIXTURES, isFixtureName } from './fixtures'
 
 const entries = Object.entries(FIXTURES)
@@ -19,7 +18,7 @@ describe('fixtures', () => {
       if (view.phase.name === 'lobby') {
         expect(view.board, name).toBeNull()
       } else {
-        expect(view.board?.length, name).toBe(BOARD_CELLS)
+        expect(view.board?.length, name).toBe(25)
       }
     }
   })

@@ -1,6 +1,5 @@
-import type { Phase, Team } from '../../src/shared/protocol'
-import { BOARD_CELLS } from '../../src/shared/protocol'
-import { newBoard, otherTeam } from './board'
+import type { Deck, Phase, Team } from '../../src/shared/protocol'
+import { DECKS, newBoard, otherTeam } from './board'
 import { assignTeam, isConnected, pickClueGivers, seatOf } from './roster'
 import { GameError, type Board, type Game, type Seat, type ServerState, type Vote } from './state'
 import { commit, logged, type CommitOptions } from './undo'
@@ -18,10 +17,24 @@ const withPhase = (board: Board, phase: Phase): Board => ({ ...board, phase })
 /** "Red" / "Blue", for timeline labels. */
 const teamName = (team: Team) => (team === 'red' ? 'Red' : 'Blue')
 
-export function startGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
+export function startGame(
+  s: ServerState,
+  words: readonly string[],
+  rand: () => number,
+  pictures: readonly string[] = [],
+): ServerState {
   if (s.game) throw new GameError('not-in-lobby', 'A game is already running')
   requireEnoughPlayers(s)
-  return dealGame(s, words, rand)
+  return dealGame(s, words, rand, pictures)
+}
+
+/** Lobby only. Pictures needs at least a board's worth of images. */
+export function setDeck(s: ServerState, deck: Deck, pictures: readonly string[]): ServerState {
+  if (s.game) throw new GameError('not-in-lobby', 'Change the deck in the lobby')
+  if (deck === 'pictures' && pictures.length < DECKS.pictures.size) {
+    throw new GameError('no-pictures', `Add at least ${DECKS.pictures.size} pictures to public/cards`)
+  }
+  return { ...s, deck }
 }
 
 function requireEnoughPlayers(s: ServerState) {
@@ -33,9 +46,15 @@ function requireEnoughPlayers(s: ServerState) {
 }
 
 /** Picks clue-givers and deals a fresh board, keeping the roster. */
-export function dealGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
+export function dealGame(
+  s: ServerState,
+  words: readonly string[],
+  rand: () => number,
+  pictures: readonly string[] = [],
+): ServerState {
   const { state, clueGivers } = pickClueGivers(s)
-  return { ...state, game: { board: newBoard(words, rand), history: [], timeline: [], clueGivers, votes: {} } }
+  const board = s.deck === 'pictures' ? newBoard(pictures, rand, DECKS.pictures) : newBoard(words, rand)
+  return { ...state, game: { board, history: [], timeline: [], clueGivers, votes: {} } }
 }
 
 export function guessersOf(s: ServerState, team: Team): Seat[] {
@@ -108,7 +127,7 @@ export const cardsOf = (vote: Vote | undefined): number[] => (Array.isArray(vote
 export function castVote(s: ServerState, seatId: string, card: number): ServerState {
   const game = requireVoter(s, seatId)
   const { phase } = game.board
-  if (!Number.isInteger(card) || card < 0 || card >= BOARD_CELLS || game.board.cards[card]?.revealed !== false) {
+  if (!Number.isInteger(card) || card < 0 || card >= game.board.cards.length || game.board.cards[card]?.revealed !== false) {
     throw new GameError('invalid-vote', "That card can't be picked")
   }
   const mine = cardsOf(game.votes[seatId])
@@ -159,7 +178,9 @@ export function reveal(s: ServerState, card: number): ServerState {
   const board: Board = { ...game.board, cards }
   const color = cards[card].color
   const guessing = phase.team
-  const label = `${teamName(guessing)} revealed ${cards[card].word.toUpperCase()} (${color})`
+  const { word } = cards[card]
+  const name = s.deck === 'pictures' ? `picture ${word.slice('card-'.length)}` : word.toUpperCase()
+  const label = `${teamName(guessing)} revealed ${name} (${color})`
   const wins = (team: Team) => `${label} — ${teamName(team)} wins`
 
   if (color === 'assassin') {
@@ -212,10 +233,15 @@ export function moveSeat(s: ServerState, seatId: string, team: Team): ServerStat
   return settleVotes(assignTeam(s, seatId, team))
 }
 
-export function newGame(s: ServerState, words: readonly string[], rand: () => number): ServerState {
+export function newGame(
+  s: ServerState,
+  words: readonly string[],
+  rand: () => number,
+  pictures: readonly string[] = [],
+): ServerState {
   requireGame(s)
   requireEnoughPlayers(s)
-  return dealGame(s, words, rand)
+  return dealGame(s, words, rand, pictures)
 }
 
 export function backToLobby(s: ServerState): ServerState {

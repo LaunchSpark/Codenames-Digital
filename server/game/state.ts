@@ -1,4 +1,4 @@
-import type { CardColor, Clue, ErrorCode, Phase, Team } from '../../src/shared/protocol'
+import type { CardColor, Clue, Deck, ErrorCode, Phase, Team } from '../../src/shared/protocol'
 
 export interface Seat {
   id: string
@@ -58,6 +58,8 @@ export interface Game {
 
 export interface ServerState {
   mode: 'vs'
+  /** Set in the lobby; a running game never changes it. */
+  deck: Deck
   roster: Roster
   game: Game | null
 }

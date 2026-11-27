@@ -1,6 +1,8 @@
 export type Team = 'red' | 'blue'
 export type CardColor = Team | 'neutral' | 'assassin'
 export type Mode = 'vs' | 'coop'
+/** Which cards the board deals: 25 words, or 20 pictures from public/cards. */
+export type Deck = 'words' | 'pictures'
 
 export interface PlayerInfo {
   id: string
@@ -107,6 +109,7 @@ export type ErrorCode =
   | 'nothing-to-undo'
   | 'unknown-player'
   | 'clue-giver-locked'
+  | 'no-pictures'
 
 export type ServerMessage =
   | { type: 'welcome'; token: string; playerId: string }
@@ -145,4 +148,3 @@ export type ClientMessage =
 
 export const SEAT_STORAGE_KEY = 'codenames-seat'
 export const WS_PATH = '/ws'
-export const BOARD_CELLS = 25
