@@ -105,7 +105,16 @@ async function startedTable() {
   const started = await tv.state((s) => s.view.phase.name === 'clue')
   const team = started.view.startingTeam!
   const [mine, theirs] = team === 'red' ? [red, blue] : [blue, red]
-  return { tv, team, giver: mine[0], guessers: [mine[1], mine[2]], otherGuesser: theirs[1] }
+  return { tv, team, giver: mine[0], checker: theirs[0], guessers: [mine[1], mine[2]], otherGuesser: theirs[1] }
+}
+
+type Table = Awaited<ReturnType<typeof startedTable>>
+
+/** The giver sends ZZYZX 2 and the other clue-giver approves it once it reaches them. */
+async function approvedClue({ giver, checker }: Table) {
+  giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
+  await checker.c.state((s) => s.you.kind === 'player' && s.you.pendingClue !== null)
+  checker.c.send({ type: 'clue-verdict', approve: true })
 }
 
 afterEach(async () => {
@@ -144,14 +153,15 @@ describe('game server', () => {
 
   it('keeps a seat connected, and its vote, until its last socket closes', async () => {
     await boot()
-    const { team, giver, guessers } = await startedTable()
+    const table = await startedTable()
+    const { team, guessers } = table
     const [me, teammate] = guessers
 
     const second = await open()
     second.send({ type: 'hello', client: 'player', token: me.token })
     await second.state((s) => isPlayer(s.you, me.playerId))
 
-    giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
+    await approvedClue(table)
     await me.c.state((s) => s.view.phase.name === 'guess')
     me.c.send({ type: 'vote', card: 0 })
     await me.c.state((s) => s.you.kind === 'player' && s.you.votes[0] === 0)
@@ -170,9 +180,10 @@ describe('game server', () => {
 
   it('never sends a guesser the colour of an unrevealed card', async () => {
     await boot()
-    const { giver, guessers, otherGuesser } = await startedTable()
+    const table = await startedTable()
+    const { giver, guessers, otherGuesser } = table
 
-    giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
+    await approvedClue(table)
     await guessers[0].c.state((s) => s.view.phase.name === 'guess')
     for (const g of guessers) g.c.send({ type: 'vote', card: 0 })
     await otherGuesser.c.state((s) => s.view.board?.[0].revealed === true)

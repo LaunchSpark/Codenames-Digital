@@ -65,7 +65,7 @@ function fakeWindow() {
 
 const view = { phase: { name: 'lobby' } } as unknown as GameView
 const spectator: You = { kind: 'spectator' }
-const player: You = { kind: 'player', id: 'p1', team: 'red', role: null, votes: [], votedEnd: false }
+const player: You = { kind: 'player', id: 'p1', team: 'red', role: null, votes: [], votedEnd: false, pendingClue: null, rejectedClue: null }
 
 function setup(opts: { client?: 'tv' | 'player'; stored?: Record<string, string> } = {}) {
   const storage = memoryStorage(opts.stored)

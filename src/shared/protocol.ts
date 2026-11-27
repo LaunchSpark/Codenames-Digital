@@ -69,6 +69,8 @@ export interface GameView {
   startingTeam: Team | null
   /** All clues this game, oldest first. */
   clues: Clue[]
+  /** The team whose clue the other clue-giver is checking; the clue itself only reaches the two clue-givers. */
+  checking: Team | null
   /** Pip slots per card = connected guessers on the guessing team (0 outside 'guess'). */
   voterCount: number
   /** Guessers currently voting to end the turn. */
@@ -98,6 +100,10 @@ export type You =
       votes: number[]
       /** This player is voting to end the turn (never alongside card votes). */
       votedEnd: boolean
+      /** The clue waiting to be checked: set only for its giver and the checking clue-giver. */
+      pendingClue: Clue | null
+      /** This team's last rejected clue: set only for that team's clue-giver. */
+      rejectedClue: Clue | null
     }
 
 export type ErrorCode =
@@ -127,6 +133,8 @@ export type ClientMessage =
   | { type: 'join'; name: string; team: Team }
   /** Active clue-giver, during their team's 'clue' phase. */
   | { type: 'clue'; word: string; number: number }
+  /** The other team's clue-giver, while a clue waits: approve shows it, reject hands it back. */
+  | { type: 'clue-verdict'; approve: boolean }
   /**
    * Guesser on the guessing team. Toggles this card in their votes; they may
    * back up to guessesLeft cards, and a new card past that replaces their oldest.

@@ -4,16 +4,15 @@ import {
   backToLobby,
   castEndVote,
   castVote,
-  giveClue,
   makeClueGiver,
   moveSeat,
   newGame,
   setDeck,
-  settleVotes,
   skipTurn,
   startGame,
 } from './rules'
 import { GameError, type ServerState } from './state'
+import { clueVerdict, settle, submitClue } from './review'
 import { hostUndo, undo } from './undo'
 
 export type Sender = { host: boolean; seatId: string | null }
@@ -57,12 +56,14 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
       }
       const id = ctx.newId()
       const token = ctx.newToken()
-      const state = settleVotes(addSeat(s, { id, token, name: msg.name, team: msg.team }))
+      const state = settle(addSeat(s, { id, token, name: msg.name, team: msg.team }))
       return { state, reply: { type: 'welcome', token, playerId: id }, seatId: id }
     }
 
     case 'clue':
-      return { state: giveClue(s, seated(from), msg.word, msg.number) }
+      return { state: submitClue(s, seated(from), msg.word, msg.number) }
+    case 'clue-verdict':
+      return { state: clueVerdict(s, seated(from), msg.approve) }
     case 'vote':
       return { state: castVote(s, seated(from), msg.card) }
     case 'vote-end':
@@ -81,7 +82,7 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
     case 'host:skip-turn':
       return { state: skipTurn(s) }
     case 'host:remove-player':
-      return { state: settleVotes(removeSeat(s, msg.playerId)) }
+      return { state: settle(removeSeat(s, msg.playerId)) }
     case 'host:move-player':
       return { state: moveSeat(s, msg.playerId, msg.team) }
     case 'host:shuffle-teams':
@@ -102,6 +103,7 @@ const SHAPES: Record<ClientMessage['type'], (m: Record<string, unknown>) => bool
   hello: (m) => m.client === 'tv' || (m.client === 'player' && (m.token === null || isString(m.token))),
   join: (m) => isString(m.name) && isTeam(m.team),
   clue: (m) => isString(m.word) && isNumber(m.number),
+  'clue-verdict': (m) => typeof m.approve === 'boolean',
   vote: (m) => isNumber(m.card),
   'vote-end': () => true,
   undo: () => true,

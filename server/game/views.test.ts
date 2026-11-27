@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { GameView } from '../../src/shared/protocol'
 import { removeSeat, setConnected } from './roster'
+import { clueVerdict, submitClue } from './review'
 import { castVote, giveClue, makeClueGiver, setDeck } from './rules'
 import type { ServerState } from './state'
 import { colorIndex, lobby, PICTURES, startRed } from './testing'
@@ -17,6 +18,28 @@ const clue = () => startRed()
 const guess = () => giveClue(startRed(), 'ann', 'ocean', 2)
 
 describe('viewFor', () => {
+  it('shows a waiting clue only to the two clue-givers', () => {
+    const s = submitClue(startRed(), 'ann', 'ocean', 2)
+    const viewers: Viewer[] = [{ kind: 'tv', host: true }, { kind: 'spectator' }, player('bob'), player('eve'), player('ann'), player('dee')]
+    for (const viewer of viewers) expect(view(s, viewer).checking, JSON.stringify(viewer)).toBe('red')
+    const you = (id: string) => viewFor(s, player(id), URL).you
+    const clue = { team: 'red', word: 'ocean', number: 2 }
+    expect(you('ann')).toMatchObject({ pendingClue: clue, rejectedClue: null })
+    expect(you('dee')).toMatchObject({ pendingClue: clue })
+    expect(you('bob')).toMatchObject({ pendingClue: null, rejectedClue: null })
+    expect(you('eve')).toMatchObject({ pendingClue: null })
+    for (const viewer of [{ kind: 'tv', host: true }, { kind: 'spectator' }, player('bob'), player('eve')] as Viewer[]) {
+      expect(JSON.stringify(viewFor(s, viewer, URL)), JSON.stringify(viewer)).not.toContain('ocean')
+    }
+  })
+
+  it('hands a rejected clue back to its giver only', () => {
+    const s = clueVerdict(submitClue(startRed(), 'ann', 'ocean', 2), 'dee', false)
+    expect(viewFor(s, player('ann'), URL).you).toMatchObject({ rejectedClue: { team: 'red', word: 'ocean', number: 2 } })
+    expect(viewFor(s, player('dee'), URL).you).toMatchObject({ rejectedClue: null })
+    expect(view(s, player('ann')).checking).toBeNull()
+  })
+
   it('carries the deck and whether pictures are available', () => {
     const v = view(lobby(), { kind: 'tv', host: true })
     expect(v.deck).toBe('words')
@@ -88,7 +111,7 @@ describe('viewFor', () => {
 
   it('describes the viewer', () => {
     const s = castVote(guess(), 'bob', 3)
-    expect(viewFor(s, player('bob'), URL).you).toEqual({ kind: 'player', id: 'bob', team: 'red', role: 'guesser', votes: [3], votedEnd: false })
+    expect(viewFor(s, player('bob'), URL).you).toEqual({ kind: 'player', id: 'bob', team: 'red', role: 'guesser', votes: [3], votedEnd: false, pendingClue: null, rejectedClue: null })
     expect(viewFor(s, player('ann'), URL).you).toMatchObject({ role: 'clue-giver', votes: [], votedEnd: false })
     expect(viewFor(lobby(), player('ann'), URL).you).toMatchObject({ role: null })
     expect(viewFor(s, { kind: 'tv', host: true }, URL).you).toEqual({ kind: 'tv', host: true })

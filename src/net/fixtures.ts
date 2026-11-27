@@ -84,8 +84,8 @@ const PLAYERS: Record<Team, PlayerInfo[]> = {
   ],
 }
 
-const ANA: You = { kind: 'player', id: 'p1', team: 'red', role: 'clue-giver', votes: [], votedEnd: false }
-const BEN: You = { kind: 'player', id: 'p2', team: 'red', role: 'guesser', votes: [], votedEnd: false }
+const ANA: You = { kind: 'player', id: 'p1', team: 'red', role: 'clue-giver', votes: [], votedEnd: false, pendingClue: null, rejectedClue: null }
+const BEN: You = { kind: 'player', id: 'p2', team: 'red', role: 'guesser', votes: [], votedEnd: false, pendingClue: null, rejectedClue: null }
 
 const CLUES: Clue[] = [
   { team: 'red', word: 'ANIMAL', number: 2 },
@@ -122,6 +122,7 @@ function lobbyView(): GameView {
     teams: { red: team('red'), blue: team('blue') },
     startingTeam: null,
     clues: [],
+    checking: null,
     voterCount: 0,
     endTurnVotes: 0,
     canUndo: false,
@@ -171,6 +172,7 @@ function gameView(opts: GameOpts): GameView {
     teams: { red: team('red'), blue: team('blue') },
     startingTeam: 'red',
     clues: opts.clues,
+    checking: null,
     voterCount: guessing
       ? PLAYERS[guessing].filter((p, i) => i > 0 && p.connected).length
       : 0,

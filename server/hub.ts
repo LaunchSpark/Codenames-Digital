@@ -1,7 +1,7 @@
 import type { ServerMessage } from '../src/shared/protocol'
 import { dispatch, parseClientMessage, type DispatchContext } from './game/dispatch'
 import { emptyState, seatByToken, setConnected } from './game/roster'
-import { settleVotes } from './game/rules'
+import { settle } from './game/review'
 import { GameError, type ServerState } from './game/state'
 import { DECKS } from './game/board'
 import { viewFor, type Viewer } from './game/views'
@@ -61,7 +61,7 @@ export function createHub(opts: { joinUrl: string; ctx: DispatchContext }): Hub 
         const seat = seatByToken(state, msg.token)
         if (seat) {
           conn.seatId = seat.id
-          state = settleVotes(setConnected(state, seat.id, 1))
+          state = settle(setConnected(state, seat.id, 1))
         }
       }
       broadcast()
@@ -106,7 +106,7 @@ export function createHub(opts: { joinUrl: string; ctx: DispatchContext }): Hub 
       socket.on('close', () => {
         conns.delete(socket)
         if (conn.seatId) {
-          state = settleVotes(setConnected(state, conn.seatId, -1))
+          state = settle(setConnected(state, conn.seatId, -1))
           broadcast()
         }
       })
