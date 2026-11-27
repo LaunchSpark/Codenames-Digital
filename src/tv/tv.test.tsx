@@ -67,6 +67,26 @@ describe('Lobby', () => {
     expect((within(deck).getByRole('button', { name: 'Words' }) as HTMLButtonElement).disabled).toBe(true)
   })
 
+  it('host picks a clue-giver; whoever is due is badged', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    const send = renderLobby(view, you)
+    const red = screen.getByRole('list', { name: 'Red team' })
+    const ana = within(red).getByText('Ana', { exact: true }).closest('li')!
+    const cara = within(red).getByText('Cara', { exact: true }).closest('li')!
+    expect(within(ana).getByText('Clue-giver')).toBeTruthy()
+    expect(within(cara).queryByText('Clue-giver')).toBeNull()
+    expect((within(ana).getByRole('button', { name: 'Make Ana clue-giver' }) as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(within(cara).getByRole('button', { name: 'Make Cara clue-giver' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:make-clue-giver', playerId: 'p3' })
+  })
+
+  it('only the host can pick clue-givers, but everyone sees who is due', () => {
+    const { view, you } = fixture('tv-lobby')
+    renderLobby(view, you)
+    expect(screen.queryByRole('button', { name: /clue-giver/ })).toBeNull()
+    expect(screen.getAllByText('Clue-giver')).toHaveLength(2)
+  })
+
   it('lists both rosters in order', () => {
     const { view, you } = fixture('tv-lobby')
     renderLobby(view, you)

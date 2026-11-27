@@ -70,6 +70,11 @@ describe('join', () => {
 })
 
 describe('lobby', () => {
+  it("marks who's giving clues next game", () => {
+    setup('phone-lobby')
+    expect(screen.getAllByText('clue-giver')).toHaveLength(2)
+  })
+
   it('says which cards the host picked', () => {
     const { view } = structuredClone(FIXTURES['phone-lobby'])
     setup('phone-lobby', { view: { ...view, deck: 'pictures' } })
