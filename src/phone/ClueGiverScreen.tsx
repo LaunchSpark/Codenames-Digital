@@ -20,7 +20,7 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
     <div className={`phone-game team-${you.team}`}>
       <header className="phone-head">
         <h1 className={`team-text-${you.team}`}>{TEAM_NAME[you.team]} clue-giver</h1>
-        <UndoButton canUndo={view.canUndo || myWaiting !== null} disabled={disabled} send={send} />
+        <UndoButton canUndo={view.canUndo} disabled={disabled} send={send} />
       </header>
 
       {/*
@@ -45,9 +45,13 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
         {toCheck ? (
           <CheckClue clue={toCheck} send={send} disabled={disabled} />
         ) : myWaiting ? (
-          <p className="phone-status phone-status--active">
-            Waiting for {TEAM_NAME[otherTeam(myWaiting.team)]} to check {clueText(myWaiting)}…
-          </p>
+          <div className="clue-waiting">
+            <p className="phone-status phone-status--active">
+              Waiting for {TEAM_NAME[otherTeam(myWaiting.team)]} to check {clueText(myWaiting)}…
+            </p>
+            <button type="button" className="btn btn--ghost" disabled={disabled}
+              onClick={() => send({ type: 'withdraw-clue' })}>Take back</button>
+          </div>
         ) : (
           <p className={`phone-status${writing ? ' is-hidden' : ''}`} aria-hidden={writing}>
             {view.checking ? checkingLine(view.checking) : statusLine(phase, you.team)}
@@ -107,9 +111,9 @@ function CheckClue({ clue, send, disabled }: { clue: Clue; send: (m: ClientMessa
       <p className="check-clue__clue">{clueText(clue)}</p>
       <div className="check-clue__actions">
         <button type="button" className="btn btn--ghost" disabled={disabled}
-          onClick={() => send({ type: 'clue-verdict', approve: false })}>Reject</button>
+          onClick={() => send({ type: 'clue-verdict', approve: false, word: clue.word, number: clue.number })}>Reject</button>
         <button type="button" className="btn btn--primary" disabled={disabled}
-          onClick={() => send({ type: 'clue-verdict', approve: true })}>Approve</button>
+          onClick={() => send({ type: 'clue-verdict', approve: true, word: clue.word, number: clue.number })}>Approve</button>
       </div>
     </section>
   )

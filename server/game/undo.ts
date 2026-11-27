@@ -38,8 +38,6 @@ export function undo(s: ServerState, seatId: string): ServerState {
   if (!game || (game.clueGivers.red !== seatId && game.clueGivers.blue !== seatId)) {
     throw new GameError('not-your-turn', 'Only a clue-giver can undo')
   }
-  // The giver takes back a clue that's still being checked: nothing else changes.
-  if (game.pendingClue?.by === seatId) return { ...s, game: { ...game, pendingClue: null } }
   if (!canUndo(s)) throw new GameError('nothing-to-undo', 'Nothing to undo')
   const name = seatOf(s, seatId)?.name ?? 'A clue-giver'
   const history = game.history.slice(0, -1)

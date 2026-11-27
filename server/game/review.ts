@@ -26,14 +26,29 @@ export function submitClue(s: ServerState, seatId: string, rawWord: string, numb
 }
 
 /** The checking clue-giver approves (commits) or rejects (hands back) the waiting clue. */
-export function clueVerdict(s: ServerState, seatId: string, approve: boolean): ServerState {
+export function clueVerdict(
+  s: ServerState,
+  seatId: string,
+  approve: boolean,
+  expected?: { word: string; number: number },
+): ServerState {
   const game = s.game
   const pending = game?.pendingClue
   if (!game || !pending || game.clueGivers[otherTeam(pending.clue.team)] !== seatId) {
     throw new GameError('not-your-turn', 'There is no clue for you to check')
   }
+  if (expected && (expected.word !== pending.clue.word || expected.number !== pending.clue.number)) {
+    throw new GameError('not-your-turn', 'That clue was changed — check the new one')
+  }
   if (approve) return commitClue(s, pending.clue)
   return { ...s, game: { ...game, pendingClue: null, rejectedClue: pending.clue } }
+}
+
+/** The giver takes back their waiting clue. A no-op once it's been approved, rejected or dropped. */
+export function withdrawClue(s: ServerState, seatId: string): ServerState {
+  const game = s.game
+  if (!game || game.pendingClue?.by !== seatId) return s
+  return { ...s, game: { ...game, pendingClue: null } }
 }
 
 /** Drops a waiting clue whose giver was replaced; commits one nobody can check. */

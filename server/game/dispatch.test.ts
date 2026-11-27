@@ -27,12 +27,14 @@ describe('dispatch', () => {
     const sent = run(startRed(), as('ann'), { type: 'clue', word: 'ocean', number: 2 }).state
     expect(sent.game!.board.phase.name).toBe('clue')
     expect(sent.game!.pendingClue?.clue.word).toBe('ocean')
-    const approved = run(sent, as('dee'), { type: 'clue-verdict', approve: true }).state
+    const approved = run(sent, as('dee'), { type: 'clue-verdict', approve: true, word: 'ocean', number: 2 }).state
     expect(approved.game!.board.phase.name).toBe('guess')
   })
 
-  it('rejects a verdict that is not true or false', () => {
-    expect(codeOf(() => parseClientMessage('{"type":"clue-verdict","approve":"yes"}'))).toBe('bad-message')
+  it('rejects a malformed verdict', () => {
+    expect(codeOf(() => parseClientMessage('{"type":"clue-verdict","approve":"yes","word":"ocean","number":2}'))).toBe('bad-message')
+    expect(codeOf(() => parseClientMessage('{"type":"clue-verdict","approve":true}'))).toBe('bad-message')
+    expect(parseClientMessage('{"type":"withdraw-clue"}')).toEqual({ type: 'withdraw-clue' })
   })
 
   it('lets the host pick the picture deck, then deals pictures', () => {
@@ -107,7 +109,7 @@ describe('dispatch', () => {
 
   it('routes play messages to the rules', () => {
     let s = run(startRed(), as('ann'), { type: 'clue', word: 'ocean', number: 2 }).state
-    s = run(s, as('dee'), { type: 'clue-verdict', approve: true }).state
+    s = run(s, as('dee'), { type: 'clue-verdict', approve: true, word: 'ocean', number: 2 }).state
     expect(s.game!.board.phase.name).toBe('guess')
     s = run(s, as('bob'), { type: 'vote', card: 4 }).state
     expect(s.game!.votes).toEqual({ bob: [4] })

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { removeSeat, setConnected } from './roster'
-import { clueVerdict, settle, submitClue } from './review'
+import { clueVerdict, settle, submitClue, withdrawClue } from './review'
 import { makeClueGiver, skipTurn } from './rules'
 import type { ServerState } from './state'
 import { codeOf, startRed } from './testing'
@@ -65,11 +65,28 @@ describe('clue review', () => {
     expect(clueLabels(s)).toEqual(['Red clue: SEA 1'])
   })
 
-  it('the giver takes a waiting clue back with undo, even on the first clue', () => {
-    const s = undo(waiting(), 'ann')
+  it('the giver takes a waiting clue back, even on the first clue', () => {
+    const s = withdrawClue(waiting(), 'ann')
     expect(game(s).pendingClue).toBeNull()
     expect(game(s).history).toHaveLength(0)
     expect(game(s).timeline).toEqual([])
+  })
+
+  it('a take-back that arrives after a reject leaves the game alone', () => {
+    const rejected = clueVerdict(waiting(), 'dee', false)
+    expect(withdrawClue(rejected, 'ann')).toBe(rejected)
+  })
+
+  it("undo is always a board undo, never a take-back", () => {
+    expect(codeOf(() => undo(waiting(), 'ann'))).toBe('nothing-to-undo')
+  })
+
+  it('a verdict for a clue that has since changed is refused', () => {
+    let s = withdrawClue(waiting(), 'ann')
+    s = submitClue(s, 'ann', 'wave', 3)
+    expect(codeOf(() => clueVerdict(s, 'dee', true, { word: 'ocean', number: 2 }))).toBe('not-your-turn')
+    expect(game(s).pendingClue?.clue.word).toBe('wave')
+    expect(phaseName(clueVerdict(s, 'dee', true, { word: 'wave', number: 3 }))).toBe('guess')
   })
 
   it('checker going offline approves the waiting clue', () => {

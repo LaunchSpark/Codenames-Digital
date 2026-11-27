@@ -133,8 +133,13 @@ export type ClientMessage =
   | { type: 'join'; name: string; team: Team }
   /** Active clue-giver, during their team's 'clue' phase. */
   | { type: 'clue'; word: string; number: number }
-  /** The other team's clue-giver, while a clue waits: approve shows it, reject hands it back. */
-  | { type: 'clue-verdict'; approve: boolean }
+  /**
+   * The other team's clue-giver, while a clue waits: approve shows it, reject hands it back.
+   * Names the clue it rules on, so a verdict can't land on a clue sent after it.
+   */
+  | { type: 'clue-verdict'; approve: boolean; word: string; number: number }
+  /** The giver takes back their waiting clue; does nothing once it's been ruled on. */
+  | { type: 'withdraw-clue' }
   /**
    * Guesser on the guessing team. Toggles this card in their votes; they may
    * back up to guessesLeft cards, and a new card past that replaces their oldest.

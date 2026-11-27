@@ -12,7 +12,7 @@ import {
   startGame,
 } from './rules'
 import { GameError, type ServerState } from './state'
-import { clueVerdict, settle, submitClue } from './review'
+import { clueVerdict, settle, submitClue, withdrawClue } from './review'
 import { hostUndo, undo } from './undo'
 
 export type Sender = { host: boolean; seatId: string | null }
@@ -63,7 +63,9 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
     case 'clue':
       return { state: submitClue(s, seated(from), msg.word, msg.number) }
     case 'clue-verdict':
-      return { state: clueVerdict(s, seated(from), msg.approve) }
+      return { state: clueVerdict(s, seated(from), msg.approve, { word: msg.word, number: msg.number }) }
+    case 'withdraw-clue':
+      return { state: withdrawClue(s, seated(from)) }
     case 'vote':
       return { state: castVote(s, seated(from), msg.card) }
     case 'vote-end':
@@ -103,7 +105,8 @@ const SHAPES: Record<ClientMessage['type'], (m: Record<string, unknown>) => bool
   hello: (m) => m.client === 'tv' || (m.client === 'player' && (m.token === null || isString(m.token))),
   join: (m) => isString(m.name) && isTeam(m.team),
   clue: (m) => isString(m.word) && isNumber(m.number),
-  'clue-verdict': (m) => typeof m.approve === 'boolean',
+  'clue-verdict': (m) => typeof m.approve === 'boolean' && isString(m.word) && isNumber(m.number),
+  'withdraw-clue': () => true,
   vote: (m) => isNumber(m.card),
   'vote-end': () => true,
   undo: () => true,

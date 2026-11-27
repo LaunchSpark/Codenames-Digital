@@ -260,3 +260,9 @@ select.field__input {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+.clue-waiting {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

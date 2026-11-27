@@ -181,7 +181,7 @@ describe('clue-giver', () => {
 })
 
 describe('clue checking', () => {
-  it('the giver waits, and can take the clue back even with nothing else to undo', () => {
+  it('the giver waits, and takes the clue back with its own button', () => {
     const g = game('phone-cluegiver-waiting-check')
     g.view!.canUndo = false
     const send = vi.fn<(m: ClientMessage) => void>()
@@ -189,18 +189,19 @@ describe('clue checking', () => {
     expect(screen.getByText('Waiting for Blue to check OCEAN 2…')).toBeTruthy()
     // The clue box keeps its slot (so the board doesn't jump) but is hidden and inert.
     expect(screen.getByLabelText('Clue').closest('[inert]')).not.toBeNull()
-    fireEvent.click(button('Undo'))
-    fireEvent.click(button('Yes, undo'))
-    expect(send).toHaveBeenCalledWith({ type: 'undo' })
+    // Undo stays a board undo; taking the clue back is separate.
+    expect(button('Undo').disabled).toBe(true)
+    fireEvent.click(button('Take back'))
+    expect(send).toHaveBeenCalledWith({ type: 'withdraw-clue' })
   })
 
   it("the other clue-giver approves or rejects", () => {
     const { send } = setup('phone-cluegiver-checking')
     expect(screen.getByText('OCEAN 2')).toBeTruthy()
     fireEvent.click(button('Approve'))
-    expect(send).toHaveBeenCalledWith({ type: 'clue-verdict', approve: true })
+    expect(send).toHaveBeenCalledWith({ type: 'clue-verdict', approve: true, word: 'ocean', number: 2 })
     fireEvent.click(button('Reject'))
-    expect(send).toHaveBeenCalledWith({ type: 'clue-verdict', approve: false })
+    expect(send).toHaveBeenCalledWith({ type: 'clue-verdict', approve: false, word: 'ocean', number: 2 })
   })
 
   it('a rejected clue comes back in the box', () => {

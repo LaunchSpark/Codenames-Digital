@@ -114,7 +114,7 @@ type Table = Awaited<ReturnType<typeof startedTable>>
 async function approvedClue({ giver, checker }: Table) {
   giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
   await checker.c.state((s) => s.you.kind === 'player' && s.you.pendingClue !== null)
-  checker.c.send({ type: 'clue-verdict', approve: true })
+  checker.c.send({ type: 'clue-verdict', approve: true, word: 'zzyzx', number: 2 })
 }
 
 afterEach(async () => {
