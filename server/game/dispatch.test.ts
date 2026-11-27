@@ -4,12 +4,13 @@ import { dispatch, parseClientMessage, type DispatchContext, type Sender } from 
 import { seededRandom } from './random'
 import { castVote, giveClue, voters } from './rules'
 import type { ServerState } from './state'
-import { codeOf, colorIndex, lobby, startRed } from './testing'
+import { codeOf, colorIndex, lobby, PICTURES, startRed } from './testing'
 import { WORDS } from './words'
 
 let n = 0
 const ctx: DispatchContext = {
   words: WORDS,
+  pictures: PICTURES,
   rand: seededRandom(5),
   newId: () => `p${++n}`,
   newToken: () => `tok${n}`,
@@ -22,6 +23,20 @@ const run = (s: ServerState, from: Sender, msg: ClientMessage) => dispatch(s, fr
 const guess = () => giveClue(startRed(), 'ann', 'ocean', 2)
 
 describe('dispatch', () => {
+  it('lets the host pick the picture deck, then deals pictures', () => {
+    const picked = run(lobby(), host, { type: 'host:set-deck', deck: 'pictures' }).state
+    expect(picked.deck).toBe('pictures')
+    expect(run(picked, host, { type: 'host:start' }).state.game!.board.cards).toHaveLength(20)
+  })
+
+  it('refuses a deck change from a player', () => {
+    expect(codeOf(() => run(lobby(), as('ann'), { type: 'host:set-deck', deck: 'pictures' }))).toBe('not-host')
+  })
+
+  it('rejects an unknown deck', () => {
+    expect(codeOf(() => parseClientMessage('{"type":"host:set-deck","deck":"emoji"}'))).toBe('bad-message')
+  })
+
   it('refuses host actions from non-host connections', () => {
     const msgs: ClientMessage[] = [
       { type: 'host:start' },

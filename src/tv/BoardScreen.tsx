@@ -22,7 +22,7 @@ export function BoardScreen({ view, you, send, disabled }: TvScreenProps) {
 
       <main className="tv-board__grid">
         {view.board && (
-          <WordGrid cards={view.board} showPips={guessing} voterCount={view.voterCount} variant="tv" />
+          <WordGrid cards={view.board} showPips={guessing} voterCount={view.voterCount} variant="tv" pictures={view.deck === 'pictures'} />
         )}
       </main>
 

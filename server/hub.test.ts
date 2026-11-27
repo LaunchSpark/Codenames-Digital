@@ -23,7 +23,7 @@ class FakeSocket extends EventEmitter implements HubSocket {
 const hub = () =>
   createHub({
     joinUrl: 'http://test/',
-    ctx: { words: WORDS, rand: seededRandom(1), newId: () => 'p1', newToken: () => 't1' },
+    ctx: { words: WORDS, pictures: [], rand: seededRandom(1), newId: () => 'p1', newToken: () => 't1' },
   })
 
 describe('hub resilience', () => {
@@ -39,6 +39,7 @@ describe('hub resilience', () => {
       joinUrl: 'http://test/',
       ctx: {
         words: WORDS,
+        pictures: [],
         rand: seededRandom(1),
         newId: () => {
           throw new TypeError('boom')

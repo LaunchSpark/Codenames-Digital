@@ -131,3 +131,4 @@
   .join-screen__intro p, .screen-footer, .lobby-welcome__icon { display:none; }
 }
 .lobby-roster__remove:hover:not(:disabled) { color:#fca5a5; }
+.lobby-welcome p.lobby-welcome__deck { font-size:12px; text-transform:uppercase; letter-spacing:1px; }

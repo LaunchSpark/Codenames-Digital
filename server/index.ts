@@ -21,6 +21,7 @@ export interface ServerOptions {
 export async function startServer(opts: ServerOptions): Promise<{ port: number; close(): Promise<void> }> {
   const ctx: DispatchContext = {
     words: WORDS,
+    pictures: [],
     rand: Math.random,
     newId: () => randomUUID(),
     newToken: () => randomBytes(16).toString('hex'),

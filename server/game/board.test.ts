@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { newBoard } from './board'
+import { DECKS, newBoard } from './board'
 import { seededRandom } from './random'
+import { PICTURES } from './testing'
 import { WORDS } from './words'
 
 const count = (board: ReturnType<typeof newBoard>, color: string) =>
@@ -43,5 +44,22 @@ describe('newBoard', () => {
 
   it('throws on fewer than 25 words', () => {
     expect(() => newBoard(WORDS.slice(0, 24), seededRandom(1))).toThrow()
+  })
+
+  it('deals 20 distinct pictures with 8/7/4/1', () => {
+    const board = newBoard(PICTURES, seededRandom(2), DECKS.pictures)
+    const ids = board.cards.map((c) => c.word)
+    const other = board.startingTeam === 'red' ? 'blue' : 'red'
+    expect(board.cards).toHaveLength(20)
+    expect(new Set(ids).size).toBe(20)
+    for (const id of ids) expect(PICTURES).toContain(id)
+    expect(count(board, board.startingTeam)).toBe(8)
+    expect(count(board, other)).toBe(7)
+    expect(count(board, 'neutral')).toBe(4)
+    expect(count(board, 'assassin')).toBe(1)
+  })
+
+  it('throws on fewer than 20 pictures', () => {
+    expect(() => newBoard(PICTURES.slice(0, 19), seededRandom(1), DECKS.pictures)).toThrow()
   })
 })

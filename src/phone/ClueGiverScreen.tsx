@@ -42,7 +42,7 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
         />
       )}
 
-      {view.board && <MyWords cards={view.board} team={you.team} />}
+      {view.board && <MyWords cards={view.board} team={you.team} pictures={view.deck === 'pictures'} />}
     </div>
   )
 }
@@ -51,17 +51,19 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
  * The team's words still to be found, for planning the next clue. Below the
  * board, so it can shrink as cards are picked without moving anything above.
  */
-function MyWords({ cards, team }: { cards: CardView[]; team: Team }) {
+/** The team's unpicked cards: words as chips, pictures as thumbnails. */
+function MyWords({ cards, team, pictures }: { cards: CardView[]; team: Team; pictures: boolean }) {
   const words = cards.filter((c) => c.color === team && !c.revealed).map((c) => c.word)
+  const label = pictures ? 'Your pictures' : 'Your words'
   return (
     <section className="my-words">
       <header className="my-words__head">
-        <h2>Your words</h2>
+        <h2>{label}</h2>
         <span>{words.length} left</span>
       </header>
-      <ul className="my-words__list" aria-label="Your words">
+      <ul className={`my-words__list${pictures ? ' my-words__list--pictures' : ''}`} aria-label={label}>
         {words.map((w) => (
-          <li key={w}>{w}</li>
+          <li key={w}>{pictures ? <img src={`/cards/${w}.jpg`} alt={`Picture ${w.replace(/^card-/, '')}`} /> : w}</li>
         ))}
       </ul>
     </section>

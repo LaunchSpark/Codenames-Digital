@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { seededRandom } from './random'
 import { setConnected } from './roster'
-import { castEndVote, castVote, giveClue, settleVotes, startGame, voters } from './rules'
+import { backToLobby, castEndVote, castVote, giveClue, newGame, reveal, setDeck, settleVotes, startGame, voters } from './rules'
 import type { ServerState } from './state'
-import { codeOf, colorIndex, lobbyWith, startRed } from './testing'
+import { codeOf, colorIndex, lobby, lobbyWith, PICTURES, startRed } from './testing'
+import { timelineLabels } from './undo'
 import { WORDS } from './words'
 
 /** Red's guess phase after ann's clue. */
@@ -225,5 +226,58 @@ describe('ending the turn', () => {
     expect(phase(s).name).toBe('guess')
     s = castEndVote(s, 'cy')
     expect(phase(s)).toEqual({ name: 'clue', team: 'blue' })
+  })
+})
+
+describe('picture deck', () => {
+  const pictureLobby = () => setDeck(lobby(), 'pictures', PICTURES)
+  /** A started picture game where red goes first, in red's guess phase (8 guesses allowed). */
+  const pictureGuessing = () => giveClue(startRed(pictureLobby()), 'ann', 'ocean', 8)
+
+  it('setDeck switches the lobby deck', () => {
+    expect(lobby().deck).toBe('words')
+    expect(pictureLobby().deck).toBe('pictures')
+  })
+
+  it('setDeck refuses mid-game', () => {
+    expect(codeOf(() => setDeck(startRed(), 'pictures', PICTURES))).toBe('not-in-lobby')
+  })
+
+  it('setDeck refuses pictures with fewer than 20 images', () => {
+    expect(codeOf(() => setDeck(lobby(), 'pictures', PICTURES.slice(0, 19)))).toBe('no-pictures')
+    expect(setDeck(pictureLobby(), 'words', []).deck).toBe('words')
+  })
+
+  it('a picture game deals 20 cards', () => {
+    const s = startGame(pictureLobby(), WORDS, seededRandom(1), PICTURES)
+    expect(s.game!.board.cards).toHaveLength(20)
+    for (const c of s.game!.board.cards) expect(c.word).toMatch(/^card-\d+$/)
+  })
+
+  it('refuses a vote past the 20th card', () => {
+    const s = pictureGuessing()
+    expect(codeOf(() => castVote(s, 'bob', 20))).toBe('invalid-vote')
+    expect(codeOf(() => castVote(s, 'bob', 24))).toBe('invalid-vote')
+  })
+
+  it('new game keeps pictures; back to lobby + words deals 25', () => {
+    const game = startRed(pictureLobby())
+    expect(newGame(game, WORDS, seededRandom(2), PICTURES).game!.board.cards).toHaveLength(20)
+    const words = setDeck(backToLobby(game), 'words', PICTURES)
+    expect(startGame(words, WORDS, seededRandom(2), PICTURES).game!.board.cards).toHaveLength(25)
+  })
+
+  it('wins on the 8th picture card', () => {
+    let s = pictureGuessing()
+    const team = s.game!.board.startingTeam
+    for (let i = 0; i < 8; i++) s = reveal(s, colorIndex(s, team))
+    expect(phase(s)).toEqual({ name: 'over', winner: team, reason: 'cards' })
+  })
+
+  it('labels a revealed picture by number', () => {
+    const s = pictureGuessing()
+    const i = colorIndex(s, 'red')
+    const n = s.game!.board.cards[i].word.slice('card-'.length)
+    expect(timelineLabels(reveal(s, i).game!).at(-1)).toBe(`Red revealed picture ${n} (red)`)
   })
 })

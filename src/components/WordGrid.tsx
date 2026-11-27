@@ -22,14 +22,16 @@ interface WordGridProps {
    * words off the TV). Each tile keeps its word and colour as its label.
    */
   keyCard?: boolean
+  /** Cards are picture ids (`card-17`), drawn from /cards/. */
+  pictures?: boolean
 }
 
 /**
- * The 5×5 board. Colours come straight from the server: a card with
+ * The board: 5 columns, 25 words or 20 pictures. Colours come straight from the server: a card with
  * `color: null` is drawn as unknown, and nothing here infers the key.
  */
-export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, disabled, variant, dimmed, keyCard }: WordGridProps) {
-  const gridClass = ['word-grid', `word-grid--${variant}`, dimmed && 'word-grid--dimmed', keyCard && 'word-grid--key']
+export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, disabled, variant, dimmed, keyCard, pictures }: WordGridProps) {
+  const gridClass = ['word-grid', `word-grid--${variant}`, dimmed && 'word-grid--dimmed', keyCard && 'word-grid--key', pictures && 'word-grid--pictures']
     .filter(Boolean)
     .join(' ')
   return (
@@ -47,9 +49,13 @@ export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, dis
         // Longest run that can't wrap, so CSS can shrink long words to fit.
         const style = { '--chars': Math.max(...card.word.split(/\s+/).map((w) => w.length)) } as CSSProperties
 
+        const name = pictures ? pictureName(card.word) : card.word
         const body = (
           <>
-            {!keyCard && <span className="word__text">{card.word}</span>}
+            {!keyCard && pictures && (
+              <img className="word__picture" src={`/cards/${card.word}.jpg`} alt={name} draggable={false} />
+            )}
+            {!keyCard && !pictures && <span className="word__text">{card.word}</span>}
             {showPips && !card.revealed && <Pips filled={card.votes} slots={voterCount} />}
           </>
         )
@@ -72,7 +78,7 @@ export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, dis
             className={className}
             style={style}
             role={keyCard ? 'img' : undefined}
-            aria-label={keyCard ? `${card.word}: ${card.color ?? 'unknown'}${card.revealed ? ', picked' : ''}` : undefined}
+            aria-label={keyCard ? `${name}: ${card.color ?? 'unknown'}${card.revealed ? ', picked' : ''}` : undefined}
           >
             {body}
           </div>
@@ -81,6 +87,9 @@ export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, dis
     </div>
   )
 }
+
+/** "Picture 17" for `card-17`. */
+const pictureName = (id: string) => `Picture ${id.replace(/^card-/, '')}`
 
 /** `slots` dots, the first `filled` of them solid. Also used for end-turn votes. */
 export function Pips({ filled, slots }: { filled: number; slots: number }) {

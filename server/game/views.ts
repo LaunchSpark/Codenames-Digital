@@ -27,7 +27,12 @@ function youFor(s: ServerState, viewer: Viewer): You {
 }
 
 /** Builds what one device may see. The only place hidden colours are filtered. */
-export function viewFor(s: ServerState, viewer: Viewer, joinUrl: string): { view: GameView; you: You } {
+export function viewFor(
+  s: ServerState,
+  viewer: Viewer,
+  joinUrl: string,
+  picturesAvailable = false,
+): { view: GameView; you: You } {
   const game = s.game
   const voterIds = voters(s)
   const votes = voterIds.map((id) => game?.votes[id])
@@ -56,6 +61,8 @@ export function viewFor(s: ServerState, viewer: Viewer, joinUrl: string): { view
   return {
     view: {
       mode: s.mode,
+      deck: s.deck,
+      picturesAvailable,
       phase: game?.board.phase ?? { name: 'lobby' },
       board,
       teams: { red, blue },

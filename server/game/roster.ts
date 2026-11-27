@@ -7,6 +7,7 @@ const MAX_NAME = 20
 export function emptyState(): ServerState {
   return {
     mode: 'vs',
+    deck: 'words',
     roster: { seats: {}, order: { red: [], blue: [] }, nextClueGiver: { red: 0, blue: 0 } },
     game: null,
   }
