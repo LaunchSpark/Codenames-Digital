@@ -7,6 +7,7 @@ import {
   makeClueGiver,
   moveSeat,
   newGame,
+  redrawBoard,
   setDeck,
   skipTurn,
   startGame,
@@ -77,6 +78,8 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
       return { state: startGame(s, ctx.words, ctx.rand, ctx.pictures) }
     case 'host:new-game':
       return { state: newGame(s, ctx.words, ctx.rand, ctx.pictures) }
+    case 'host:redraw':
+      return { state: redrawBoard(s, ctx.words, ctx.rand, ctx.pictures) }
     case 'host:lobby':
       return { state: backToLobby(s) }
     case 'host:make-clue-giver':
@@ -113,6 +116,7 @@ const SHAPES: Record<ClientMessage['type'], (m: Record<string, unknown>) => bool
   'host:start': () => true,
   'host:new-game': () => true,
   'host:lobby': () => true,
+  'host:redraw': () => true,
   'host:make-clue-giver': (m) => isString(m.playerId),
   'host:skip-turn': () => true,
   'host:remove-player': (m) => isString(m.playerId),

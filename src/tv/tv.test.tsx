@@ -201,6 +201,35 @@ describe('BoardScreen', () => {
     expect(items.map((li) => li.textContent)).toEqual(['OCEAN 3', 'MOUNTAIN 2', 'ANIMAL 2'])
   })
 
+  it('host menu kills the game after confirming', () => {
+    const { view, you } = fixture('tv-guess-host')
+    const send = vi.fn()
+    render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Kill game' }))
+    expect(send).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, end it' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:lobby' })
+  })
+
+  it('host menu redraws the board after confirming', () => {
+    const { view, you } = fixture('tv-guess-host')
+    const send = vi.fn()
+    render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Redraw words' }))
+    expect(send).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, redraw' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:redraw' })
+  })
+
+  it('the redraw button names pictures on a picture board', () => {
+    const { view, you } = fixture('tv-guess-host')
+    render(<BoardScreen view={{ ...view, deck: 'pictures' }} you={you} send={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    expect(screen.getByRole('button', { name: 'Redraw pictures' })).toBeTruthy()
+  })
+
   it('host menu is host-only and sends skip-turn', () => {
     const guest = fixture('tv-guess')
     render(<BoardScreen view={guest.view} you={guest.you} send={vi.fn()} />)

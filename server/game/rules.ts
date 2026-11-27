@@ -54,10 +54,30 @@ export function dealGame(
   pictures: readonly string[] = [],
 ): ServerState {
   const { state, clueGivers } = pickClueGivers(s)
-  const board = s.deck === 'pictures' ? newBoard(pictures, rand, DECKS.pictures) : newBoard(words, rand)
+  const board = dealBoard(s, words, rand, pictures)
   return {
     ...state,
     game: { board, history: [], timeline: [], clueGivers, votes: {}, pendingClue: null, rejectedClue: null },
+  }
+}
+
+/** A fresh board from the lobby's deck. */
+function dealBoard(s: ServerState, words: readonly string[], rand: () => number, pictures: readonly string[]): Board {
+  return s.deck === 'pictures' ? newBoard(pictures, rand, DECKS.pictures) : newBoard(words, rand)
+}
+
+/** Host: swap in a fresh board mid-game. Clue-givers and roster stay; clues, votes and undo history start over. */
+export function redrawBoard(
+  s: ServerState,
+  words: readonly string[],
+  rand: () => number,
+  pictures: readonly string[] = [],
+): ServerState {
+  const game = requireGame(s)
+  const board = dealBoard(s, words, rand, pictures)
+  return {
+    ...s,
+    game: { ...game, board, history: [], timeline: [], votes: {}, pendingClue: null, rejectedClue: null },
   }
 }
 

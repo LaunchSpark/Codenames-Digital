@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { seededRandom } from './random'
 import { assignTeam, changeSeat, dueClueGiver, removeSeat, setConnected } from './roster'
-import { backToLobby, giveClue, makeClueGiver, newGame, skipTurn, startGame } from './rules'
-import { codeOf, lobby, startRed } from './testing'
+import { backToLobby, giveClue, makeClueGiver, newGame, redrawBoard, setDeck, skipTurn, startGame } from './rules'
+import { codeOf, lobby, PICTURES, startRed } from './testing'
 import { WORDS } from './words'
 
 const rand = seededRandom(42)
@@ -96,6 +96,31 @@ describe('back to lobby', () => {
     expect(s.game).toBeNull()
     expect(s.roster).toEqual(started.roster)
     expect(s.roster.nextClueGiver).toEqual({ red: 1, blue: 1 })
+  })
+})
+
+describe('redraw', () => {
+  it('deals a fresh board and keeps the clue-givers', () => {
+    const before = giveClue(startRed(), 'ann', 'ocean', 2)
+    const s = redrawBoard(before, WORDS, seededRandom(9), PICTURES)
+    const game = s.game!
+    expect(game.clueGivers).toEqual(before.game!.clueGivers)
+    expect(game.board.cards.map((c) => c.word)).not.toEqual(before.game!.board.cards.map((c) => c.word))
+    expect(game.board.cards).toHaveLength(25)
+    expect(game.board.clues).toEqual([])
+    expect(game.board.phase).toEqual({ name: 'clue', team: game.board.startingTeam })
+    expect(game.history).toEqual([])
+    expect(game.timeline).toEqual([])
+    expect(s.roster).toEqual(before.roster)
+  })
+
+  it('redraws pictures on a picture board', () => {
+    const s = redrawBoard(startRed(setDeck(lobby(), 'pictures', PICTURES)), WORDS, seededRandom(9), PICTURES)
+    expect(s.game!.board.cards).toHaveLength(20)
+  })
+
+  it('needs a running game', () => {
+    expect(codeOf(() => redrawBoard(lobby(), WORDS, rand, PICTURES))).toBe('not-in-lobby')
   })
 })
 

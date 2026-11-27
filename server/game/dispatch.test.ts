@@ -23,6 +23,13 @@ const run = (s: ServerState, from: Sender, msg: ClientMessage) => dispatch(s, fr
 const guess = () => giveClue(startRed(), 'ann', 'ocean', 2)
 
 describe('dispatch', () => {
+  it('lets the host redraw the board, and nobody else', () => {
+    const s = startRed()
+    const words = (x: ServerState) => x.game!.board.cards.map((c) => c.word)
+    expect(words(run(s, host, { type: 'host:redraw' }).state)).not.toEqual(words(s))
+    expect(codeOf(() => run(s, as('ann'), { type: 'host:redraw' }))).toBe('not-host')
+  })
+
   it("a clue from ann waits; dee's verdict message approves it", () => {
     const sent = run(startRed(), as('ann'), { type: 'clue', word: 'ocean', number: 2 }).state
     expect(sent.game!.board.phase.name).toBe('clue')

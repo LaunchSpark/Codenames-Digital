@@ -21,6 +21,9 @@ export function HostMenu({ view, send, disabled }: HostMenuProps) {
   const [removing, setRemoving] = useState<PlayerInfo | null>(null)
   /** Index into view.timeline the host is about to rewind to. */
   const [rewinding, setRewinding] = useState<number | null>(null)
+  /** A whole-game action awaiting confirmation. */
+  const [confirming, setConfirming] = useState<'kill' | 'redraw' | null>(null)
+  const redrawLabel = view.deck === 'pictures' ? 'Redraw pictures' : 'Redraw words'
   const timeline = view.timeline ?? []
 
   const needsPick = TEAMS.filter((t) => view.teams[t].clueGiverId === null)
@@ -120,6 +123,34 @@ export function HostMenu({ view, send, disabled }: HostMenuProps) {
             >
               Skip turn
             </button>
+          </section>
+
+          <section className="host-menu__section">
+            <h3>Whole game</h3>
+            {confirming && (
+              <ConfirmDialog
+                message={
+                  confirming === 'kill'
+                    ? 'End this game and send everyone back to the lobby?'
+                    : `Deal a fresh board? Clues and undo history start over; clue-givers stay.`
+                }
+                confirmLabel={confirming === 'kill' ? 'Yes, end it' : 'Yes, redraw'}
+                disabled={disabled}
+                onConfirm={() => {
+                  send({ type: confirming === 'kill' ? 'host:lobby' : 'host:redraw' })
+                  setConfirming(null)
+                }}
+                onCancel={() => setConfirming(null)}
+              />
+            )}
+            <div className="host-menu__players">
+              <button type="button" className="btn btn--ghost" disabled={disabled} onClick={() => setConfirming('redraw')}>
+                {redrawLabel}
+              </button>
+              <button type="button" className="btn btn--ghost" disabled={disabled} onClick={() => setConfirming('kill')}>
+                Kill game
+              </button>
+            </div>
           </section>
 
           <section className="host-menu__section">

@@ -155,6 +155,8 @@ export type ClientMessage =
   | { type: 'host:start' }
   | { type: 'host:new-game' }
   | { type: 'host:lobby' }
+  /** Mid-game: a fresh board from the same deck; same clue-givers, clues and undo history start over. */
+  | { type: 'host:redraw' }
   | { type: 'host:make-clue-giver'; playerId: string }
   | { type: 'host:skip-turn' }
   | { type: 'host:remove-player'; playerId: string }
