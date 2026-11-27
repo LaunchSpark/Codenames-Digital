@@ -2,7 +2,7 @@ import type { Clue, Deck, Phase, Team } from '../../src/shared/protocol'
 import { DECKS, newBoard, otherTeam } from './board'
 import { assignTeam, isConnected, pickClueGivers, seatOf } from './roster'
 import { GameError, type Board, type Game, type Seat, type ServerState, type Vote } from './state'
-import { settleClue } from './review'
+import { settle, settleClue } from './review'
 import { commit, logged, type CommitOptions } from './undo'
 
 const CLUE_WORD = /^[\p{L}]+(-[\p{L}]+)*$/u
@@ -246,7 +246,7 @@ export function moveSeat(s: ServerState, seatId: string, team: Team): ServerStat
   if (game && (game.clueGivers.red === seatId || game.clueGivers.blue === seatId)) {
     throw new GameError('clue-giver-locked', 'Make someone else clue-giver before moving this player')
   }
-  return settleVotes(assignTeam(s, seatId, team))
+  return settle(assignTeam(s, seatId, team))
 }
 
 export function newGame(
