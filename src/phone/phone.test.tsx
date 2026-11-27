@@ -70,6 +70,25 @@ describe('join', () => {
 })
 
 describe('lobby', () => {
+  it('says which cards the host picked', () => {
+    const { view } = structuredClone(FIXTURES['phone-lobby'])
+    setup('phone-lobby', { view: { ...view, deck: 'pictures' } })
+    expect(screen.getByText('Picture cards')).toBeTruthy()
+  })
+
+  it("a picture clue-giver sees their team's pictures, not ids", () => {
+    setup('phone-cluegiver-pictures')
+    const mine = screen.getByRole('list', { name: 'Your pictures' })
+    // Red has 8 cards; 0, 3 and 8 are picked in this fixture.
+    expect(mine.querySelectorAll('img')).toHaveLength(5)
+    expect(screen.queryByText(/card-\d/)).toBeNull()
+  })
+
+  it('a guesser sees pictures to vote on', () => {
+    const { container } = setup('phone-guesser-pictures')
+    expect(container.querySelectorAll('.word-grid img').length).toBeGreaterThan(0)
+  })
+
   it('shows my team and switches', () => {
     const { send } = setup('phone-lobby')
     expect(screen.getByText("You're on Red")).toBeTruthy()

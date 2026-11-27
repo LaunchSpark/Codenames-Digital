@@ -2,6 +2,7 @@ import type {
   CardColor,
   CardView,
   Clue,
+  Deck,
   GameView,
   Phase,
   PlayerInfo,
@@ -24,6 +25,7 @@ export type FixtureName =
   | 'tv-clue'
   | 'tv-guess'
   | 'tv-guess-host'
+  | 'tv-guess-pictures'
   | 'tv-needs-clue-giver'
   | 'tv-over'
   | 'phone-spectator-lobby'
@@ -33,6 +35,8 @@ export type FixtureName =
   | 'phone-cluegiver-waiting'
   | 'phone-guesser-guess'
   | 'phone-guesser-waiting'
+  | 'phone-guesser-pictures'
+  | 'phone-cluegiver-pictures'
   | 'phone-over'
 
 export interface Fixture {
@@ -59,6 +63,10 @@ const KEY: CardColor[] = (
   .trim()
   .split(/\s+/)
   .map((c) => ({ R: 'red', B: 'blue', N: 'neutral', A: 'assassin' })[c] as CardColor)
+
+/** The picture board: 20 images, the word KEY's first 20 with card 17 made blue — 8 red (starts), 7 blue, 4 neutral, 1 assassin. */
+const PICTURES = Array.from({ length: 20 }, (_, i) => `card-${i}`)
+const PICTURE_KEY: CardColor[] = KEY.slice(0, 20).map((c, i) => (i === 17 ? 'blue' : c))
 
 const JOIN_URL = 'http://192.168.1.20:3000/'
 
@@ -132,17 +140,20 @@ interface GameOpts {
   clueGivers?: Partial<Record<Team, string | null>>
   /** Host TV only. */
   timeline?: string[] | null
+  deck?: Deck
 }
 
 function gameView(opts: GameOpts): GameView {
   const revealed = new Set(opts.revealed)
-  const board: CardView[] = WORDS.map((word, i) => ({
+  const deck = opts.deck ?? 'words'
+  const key = deck === 'pictures' ? PICTURE_KEY : KEY
+  const board: CardView[] = (deck === 'pictures' ? PICTURES : WORDS).map((word, i) => ({
     word,
     revealed: revealed.has(i),
-    color: revealed.has(i) || opts.showKey ? KEY[i] : null,
+    color: revealed.has(i) || opts.showKey ? key[i] : null,
     votes: opts.votes?.[i] ?? 0,
   }))
-  const remaining = (t: Team) => KEY.filter((c, i) => c === t && !revealed.has(i)).length
+  const remaining = (t: Team) => key.filter((c, i) => c === t && !revealed.has(i)).length
   const team = (t: Team): TeamView => ({
     team: t,
     players: PLAYERS[t],
@@ -152,7 +163,7 @@ function gameView(opts: GameOpts): GameView {
   const guessing = opts.phase.name === 'guess' ? opts.phase.team : null
   return {
     mode: 'vs',
-    deck: 'words',
+    deck,
     picturesAvailable: true,
     phase: opts.phase,
     board,
@@ -170,8 +181,9 @@ function gameView(opts: GameOpts): GameView {
 }
 
 /** Red guessing OCEAN 3: Ben is voting for card 9, Cara to end the turn. */
-const oceanGuess = (showKey = false) =>
+const oceanGuess = (showKey = false, deck: Deck = 'words') =>
   gameView({
+    deck,
     phase: OCEAN_GUESS,
     revealed: MID_OCEAN,
     clues: CLUES,
@@ -209,6 +221,7 @@ export const FIXTURES: Record<FixtureName, Fixture> = {
   },
   'tv-guess': { view: oceanGuess(), you: { kind: 'tv', host: false } },
   'tv-guess-host': { view: oceanGuess(), you: { kind: 'tv', host: true } },
+  'tv-guess-pictures': { view: oceanGuess(false, 'pictures'), you: { kind: 'tv', host: false } },
   'tv-needs-clue-giver': {
     view: gameView({
       phase: { name: 'clue', team: 'red' },
@@ -227,6 +240,8 @@ export const FIXTURES: Record<FixtureName, Fixture> = {
   'phone-cluegiver-waiting': { view: oceanGuess(true), you: ANA },
   'phone-guesser-guess': { view: oceanGuess(), you: { ...BEN, votes: [9] } },
   'phone-guesser-waiting': { view: redThinking(), you: BEN },
+  'phone-cluegiver-pictures': { view: oceanGuess(true, 'pictures'), you: ANA },
+  'phone-guesser-pictures': { view: oceanGuess(false, 'pictures'), you: { ...BEN, votes: [9] } },
   'phone-over': { view: blueWinsByAssassin(), you: BEN },
 }
 

@@ -211,3 +211,15 @@ select.field__input {
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
+
+.my-words__list--pictures li {
+  padding: 0;
+  overflow: hidden;
+}
+
+.my-words__list--pictures img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+}

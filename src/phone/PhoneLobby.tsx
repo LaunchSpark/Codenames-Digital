@@ -18,6 +18,7 @@ export function PhoneLobby({ view, you, send, disabled }: PhoneScreenProps) {
         <Badge variant="outline">You're in, {name}</Badge>
         <h1>You're on {TEAM_NAME[you.team]}</h1>
         <p>Waiting for the host to start&hellip;</p>
+        <p className="lobby-welcome__deck">{view.deck === 'pictures' ? 'Picture cards' : 'Word cards'}</p>
       </header>
       <div className="phone-lobby__rosters">
         {(['red', 'blue'] as Team[]).map((t) => (

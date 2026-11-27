@@ -13,12 +13,12 @@ describe('fixtures', () => {
     }
   })
 
-  it('every in-game fixture has 25 cards', () => {
+  it('every in-game fixture has 25 words or 20 pictures', () => {
     for (const [name, { view }] of entries) {
       if (view.phase.name === 'lobby') {
         expect(view.board, name).toBeNull()
       } else {
-        expect(view.board?.length, name).toBe(25)
+        expect(view.board?.length, name).toBe(view.deck === 'pictures' ? 20 : 25)
       }
     }
   })

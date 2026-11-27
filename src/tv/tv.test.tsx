@@ -41,6 +41,32 @@ describe('Lobby', () => {
     expect(vs.getAttribute('aria-pressed')).toBe('true')
   })
 
+  it('host picks the deck', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    const send = renderLobby(view, you)
+    const deck = screen.getByRole('group', { name: 'Deck' })
+    expect(within(deck).getByRole('button', { name: 'Words' }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(within(deck).getByRole('button', { name: 'Pictures' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:set-deck', deck: 'pictures' })
+  })
+
+  it('Pictures is off when no pictures were found', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    renderLobby({ ...view, picturesAvailable: false }, you)
+    const pictures = within(screen.getByRole('group', { name: 'Deck' })).getByRole('button', { name: 'Pictures' }) as HTMLButtonElement
+    expect(pictures.disabled).toBe(true)
+  })
+
+  it('a non-host TV shows the deck but cannot change it', () => {
+    const { view, you } = fixture('tv-lobby')
+    renderLobby({ ...view, deck: 'pictures' }, you)
+    const deck = screen.getByRole('group', { name: 'Deck' })
+    const pictures = within(deck).getByRole('button', { name: 'Pictures' }) as HTMLButtonElement
+    expect(pictures.getAttribute('aria-pressed')).toBe('true')
+    expect(pictures.disabled).toBe(true)
+    expect((within(deck).getByRole('button', { name: 'Words' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
   it('lists both rosters in order', () => {
     const { view, you } = fixture('tv-lobby')
     renderLobby(view, you)
@@ -120,6 +146,12 @@ describe('Lobby', () => {
 })
 
 describe('BoardScreen', () => {
+  it('draws a picture board', () => {
+    const { view, you } = fixture('tv-guess-pictures')
+    const { container } = render(<BoardScreen view={view} you={you} send={vi.fn()} />)
+    expect(container.querySelectorAll('.word-grid img')).toHaveLength(20)
+  })
+
   it('guess phase shows the clue and pips', () => {
     const { view, you } = fixture('tv-guess')
     const { container } = render(<BoardScreen view={view} you={you} send={vi.fn()} />)
