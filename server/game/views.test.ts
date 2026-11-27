@@ -18,6 +18,13 @@ const clue = () => startRed()
 const guess = () => giveClue(startRed(), 'ann', 'ocean', 2)
 
 describe('viewFor', () => {
+  it("shows who's due to give clues in the lobby", () => {
+    const v = view(makeClueGiver(lobby(), 'cy'), { kind: 'tv', host: true })
+    expect(v.teams.red.nextClueGiverId).toBe('cy')
+    expect(v.teams.blue.nextClueGiverId).toBe('dee')
+    expect(view(startRed(), { kind: 'tv', host: true }).teams.red.nextClueGiverId).toBeNull()
+  })
+
   it('shows a waiting clue only to the two clue-givers', () => {
     const s = submitClue(startRed(), 'ann', 'ocean', 2)
     const viewers: Viewer[] = [{ kind: 'tv', host: true }, { kind: 'spectator' }, player('bob'), player('eve'), player('ann'), player('dee')]

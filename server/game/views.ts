@@ -1,5 +1,5 @@
 import type { CardView, GameView, Team, TeamView, You } from '../../src/shared/protocol'
-import { isConnected, seatOf } from './roster'
+import { dueClueGiver, isConnected, seatOf } from './roster'
 import { cardsOf, remaining, voters } from './rules'
 import type { ServerState } from './state'
 import { canUndo, timelineLabels } from './undo'
@@ -67,6 +67,7 @@ export function viewFor(
       return { id, name: seat.name, team, connected: isConnected(seat) }
     }),
     clueGiverId: game?.clueGivers[team] ?? null,
+    nextClueGiverId: game ? null : dueClueGiver(s, team),
     remaining: game ? remaining(game.board, team) : null,
   })
 

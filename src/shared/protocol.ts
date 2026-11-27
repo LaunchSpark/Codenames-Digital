@@ -51,6 +51,8 @@ export interface TeamView {
   players: PlayerInfo[]
   /** Current game's clue-giver; null in lobby or when the host must pick one. */
   clueGiverId: string | null
+  /** Lobby only: who gives this team's clues next game (the host's pick, else the rotation); null mid-game. */
+  nextClueGiverId: string | null
   /** Unrevealed cards of this colour; null in lobby. */
   remaining: number | null
 }
@@ -158,6 +160,7 @@ export type ClientMessage =
   | { type: 'host:remove-player'; playerId: string }
   /** Step back through the timeline, host corrections included; steps >= 1. */
   | { type: 'host:undo'; steps: number }
+  /** (host:make-clue-giver also works in the lobby: it picks that team's clue-giver for the next game.) */
   /** Lobby or mid-game; refused (clue-giver-locked) for a current clue-giver mid-game. */
   | { type: 'host:move-player'; playerId: string; team: Team }
   /** Lobby only: everyone into two balanced teams, random order. */

@@ -119,6 +119,7 @@ function lobbyView(): GameView {
     team: t,
     players: PLAYERS[t],
     clueGiverId: null,
+    nextClueGiverId: PLAYERS[t][0].id,
     remaining: null,
   })
   return {
@@ -168,6 +169,7 @@ function gameView(opts: GameOpts): GameView {
     team: t,
     players: PLAYERS[t],
     clueGiverId: opts.clueGivers?.[t] !== undefined ? opts.clueGivers[t]! : PLAYERS[t][0].id,
+    nextClueGiverId: null,
     remaining: remaining(t),
   })
   const guessing = opts.phase.name === 'guess' ? opts.phase.team : null

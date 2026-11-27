@@ -33,6 +33,7 @@ export function PhoneLobby({ view, you, send, disabled }: PhoneScreenProps) {
                   <li key={p.id}>
                     <span className="player-avatar" aria-hidden="true">{p.name.slice(0, 1).toUpperCase()}</span>
                     <span className="player-name">{p.name}</span>
+                    {view.teams[t].nextClueGiverId === p.id && <Badge variant="secondary">clue-giver</Badge>}
                     {p.id === you.id && <Badge variant="outline">you</Badge>}
                   </li>
                 ))}

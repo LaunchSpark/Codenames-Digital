@@ -228,6 +228,8 @@ export function skipTurn(s: ServerState): ServerState {
 export function makeClueGiver(s: ServerState, seatId: string): ServerState {
   const seat = seatOf(s, seatId)
   if (!seat) throw new GameError('unknown-player', 'No such player')
+  // In the lobby: they give their team's clues next game.
+  if (!s.game) return { ...s, roster: { ...s.roster, picked: { ...s.roster.picked, [seat.team]: seatId } } }
   const game = requireGame(s)
   const label = `Host made ${seat.name} ${teamName(seat.team)}'s clue-giver`
   return settleClue({

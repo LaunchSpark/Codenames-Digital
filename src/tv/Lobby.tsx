@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeftRight, ScanLine, Shuffle, UsersRound, X } from 'lucide-react'
+import { ArrowLeftRight, Crown, ScanLine, Shuffle, UsersRound, X } from 'lucide-react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { LobbyBrand } from '../components/LobbyBrand'
 import { Badge } from '../components/ui/badge'
@@ -111,9 +111,17 @@ function Roster({ team, view, host, send, disabled, onRemove }: RosterProps) {
             <li key={p.id}>
               <span className="player-avatar" aria-hidden="true">{p.name.slice(0, 1).toUpperCase()}</span>
               <span className={`player-name${p.connected ? '' : ' is-away'}`}>{p.name}</span>
+              {view.teams[team].nextClueGiverId === p.id && <Badge variant="secondary" className="lobby-roster__giver">Clue-giver</Badge>}
               {p.connected
                 ? <span className="presence is-online" aria-label="connected" />
                 : <Badge variant="outline" className="presence-away">away</Badge>}
+              {host && <Button type="button" variant="ghost" size="icon" className="lobby-roster__move"
+                aria-label={`Make ${p.name} clue-giver`} title="Give clues next game"
+                aria-pressed={view.teams[team].nextClueGiverId === p.id}
+                disabled={disabled || view.teams[team].nextClueGiverId === p.id}
+                onClick={() => send({ type: 'host:make-clue-giver', playerId: p.id })}>
+                <Crown aria-hidden="true" />
+              </Button>}
               {host && <Button type="button" variant="ghost" size="icon" className="lobby-roster__move"
                 aria-label={`Move ${p.name} to ${TEAM_NAME[otherTeam(team)]}`}
                 title={`Move to ${TEAM_NAME[otherTeam(team)]}`} disabled={disabled}
