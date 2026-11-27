@@ -184,3 +184,6 @@ node_modules/
 
 # Application utilities are source, not a Python build directory.
 !src/lib/
+
+# Picture-mode card images (personal copy, not committed)
+public/cards
