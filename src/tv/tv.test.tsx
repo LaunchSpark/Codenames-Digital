@@ -146,6 +146,12 @@ describe('Lobby', () => {
 })
 
 describe('BoardScreen', () => {
+  it('says when a clue is being checked, without showing it', () => {
+    const { view, you } = fixture('tv-checking')
+    render(<BoardScreen view={view} you={you} send={vi.fn()} />)
+    expect(screen.getByText("Blue is checking Red's clue…")).toBeTruthy()
+  })
+
   it('draws a picture board', () => {
     const { view, you } = fixture('tv-guess-pictures')
     const { container } = render(<BoardScreen view={view} you={you} send={vi.fn()} />)

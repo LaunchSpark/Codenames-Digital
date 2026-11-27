@@ -180,6 +180,42 @@ describe('clue-giver', () => {
   })
 })
 
+describe('clue checking', () => {
+  it('the giver waits, and can take the clue back even with nothing else to undo', () => {
+    const g = game('phone-cluegiver-waiting-check')
+    g.view!.canUndo = false
+    const send = vi.fn<(m: ClientMessage) => void>()
+    render(<PhoneScreen game={g} send={send} />)
+    expect(screen.getByText('Waiting for Blue to check OCEAN 2…')).toBeTruthy()
+    // The clue box keeps its slot (so the board doesn't jump) but is hidden and inert.
+    expect(screen.getByLabelText('Clue').closest('[inert]')).not.toBeNull()
+    fireEvent.click(button('Undo'))
+    fireEvent.click(button('Yes, undo'))
+    expect(send).toHaveBeenCalledWith({ type: 'undo' })
+  })
+
+  it("the other clue-giver approves or rejects", () => {
+    const { send } = setup('phone-cluegiver-checking')
+    expect(screen.getByText('OCEAN 2')).toBeTruthy()
+    fireEvent.click(button('Approve'))
+    expect(send).toHaveBeenCalledWith({ type: 'clue-verdict', approve: true })
+    fireEvent.click(button('Reject'))
+    expect(send).toHaveBeenCalledWith({ type: 'clue-verdict', approve: false })
+  })
+
+  it('a rejected clue comes back in the box', () => {
+    setup('phone-cluegiver-rejected')
+    expect(screen.getByText('Blue rejected OCEAN 2 — try another')).toBeTruthy()
+    expect((screen.getByLabelText('Clue') as HTMLInputElement).value).toBe('ocean')
+  })
+
+  it('a guesser sees that the clue is being checked', () => {
+    const g = game('phone-guesser-waiting')
+    setup('phone-guesser-waiting', { view: { ...g.view!, checking: 'red' } })
+    expect(screen.getByText("Blue is checking Red's clue…")).toBeTruthy()
+  })
+})
+
 describe('guesser', () => {
   it('taps send votes on their team’s guess phase', () => {
     const { send, container } = setup('phone-guesser-guess')
