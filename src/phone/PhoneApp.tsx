@@ -72,7 +72,7 @@ function PhoneOver({ view }: PhoneScreenProps) {
             : `${TEAM_NAME[winner]} found all their agents`}
         </p>
       </header>
-      {view.board && <WordGrid cards={view.board} showPips={false} voterCount={0} variant="phone" />}
+      {view.board && <WordGrid cards={view.board} showPips={false} voterCount={0} variant="phone" pictures={view.deck === 'pictures'} />}
       <p className="phone-status">Waiting for the host to start the next game</p>
     </div>
   )

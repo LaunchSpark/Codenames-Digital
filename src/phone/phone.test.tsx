@@ -276,6 +276,12 @@ describe('game over', () => {
     expect(screen.getByText('Waiting for the host to start the next game')).toBeTruthy()
     expect(container.querySelectorAll('.word--unknown')).toHaveLength(0)
   })
+
+  it('shows the picture board, not picture ids', () => {
+    const { container } = setup('phone-over-pictures')
+    expect(container.querySelectorAll('.word-grid img')).toHaveLength(20)
+    expect(screen.queryByText(/card-\d/i)).toBeNull()
+  })
 })
 
 describe('reconnecting', () => {

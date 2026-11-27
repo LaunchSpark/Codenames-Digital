@@ -38,6 +38,7 @@ export type FixtureName =
   | 'phone-guesser-pictures'
   | 'phone-cluegiver-pictures'
   | 'phone-over'
+  | 'phone-over-pictures'
 
 export interface Fixture {
   view: GameView
@@ -200,6 +201,16 @@ const redThinking = (showKey = false) =>
     showKey,
   })
 
+/** The same ending on the picture board. */
+const picturesOver = () =>
+  gameView({
+    deck: 'pictures',
+    phase: { name: 'over', winner: 'blue', reason: 'assassin' },
+    revealed: [...MID_OCEAN, 7],
+    clues: CLUES,
+    showKey: true,
+  })
+
 const blueWinsByAssassin = () =>
   gameView({
     phase: { name: 'over', winner: 'blue', reason: 'assassin' },
@@ -243,6 +254,7 @@ export const FIXTURES: Record<FixtureName, Fixture> = {
   'phone-cluegiver-pictures': { view: oceanGuess(true, 'pictures'), you: ANA },
   'phone-guesser-pictures': { view: oceanGuess(false, 'pictures'), you: { ...BEN, votes: [9] } },
   'phone-over': { view: blueWinsByAssassin(), you: BEN },
+  'phone-over-pictures': { view: picturesOver(), you: BEN },
 }
 
 export function isFixtureName(name: string | null): name is FixtureName {
