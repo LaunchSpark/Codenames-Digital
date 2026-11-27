@@ -3,6 +3,7 @@ import { dispatch, parseClientMessage, type DispatchContext } from './game/dispa
 import { emptyState, seatByToken, setConnected } from './game/roster'
 import { settleVotes } from './game/rules'
 import { GameError, type ServerState } from './game/state'
+import { DECKS } from './game/board'
 import { viewFor, type Viewer } from './game/views'
 
 /** The parts of a `ws` WebSocket the hub uses — small enough to fake in tests. */
@@ -31,6 +32,7 @@ export interface Hub {
 
 export function createHub(opts: { joinUrl: string; ctx: DispatchContext }): Hub {
   let state = emptyState()
+  const picturesAvailable = opts.ctx.pictures.length >= DECKS.pictures.size
   const conns = new Map<HubSocket, Conn>()
 
   const send = (socket: HubSocket, msg: ServerMessage) => socket.send(JSON.stringify(msg))
@@ -45,7 +47,7 @@ export function createHub(opts: { joinUrl: string; ctx: DispatchContext }): Hub 
   const broadcast = () => {
     for (const [socket, conn] of conns) {
       if (!conn.client) continue
-      send(socket, { type: 'state', ...viewFor(state, viewerOf(conn), opts.joinUrl) })
+      send(socket, { type: 'state', ...viewFor(state, viewerOf(conn), opts.joinUrl, picturesAvailable) })
     }
   }
 

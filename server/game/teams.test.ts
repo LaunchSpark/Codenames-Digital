@@ -70,7 +70,7 @@ describe('random teams', () => {
 })
 
 describe('over the wire', () => {
-  const ctx = { words: WORDS, rand: seededRandom(3), newId: () => 'x', newToken: () => 'y' }
+  const ctx = { words: WORDS, pictures: [], rand: seededRandom(3), newId: () => 'x', newToken: () => 'y' }
 
   it('both are host-only', () => {
     const guest = { host: false, seatId: 'ann' }

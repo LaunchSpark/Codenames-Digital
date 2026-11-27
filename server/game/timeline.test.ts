@@ -105,7 +105,7 @@ describe('host undo', () => {
   })
 
   it('is host-only over the wire', () => {
-    const ctx = { words: WORDS, rand: seededRandom(1), newId: () => 'x', newToken: () => 'y' }
+    const ctx = { words: WORDS, pictures: [], rand: seededRandom(1), newId: () => 'x', newToken: () => 'y' }
     const s = giveClue(startRed(), 'ann', 'ocean', 2)
     expect(codeOf(() => dispatch(s, { host: false, seatId: 'ann' }, { type: 'host:undo', steps: 1 }, ctx))).toBe('not-host')
     expect(phase(dispatch(s, { host: true, seatId: null }, { type: 'host:undo', steps: 1 }, ctx).state).name).toBe('clue')

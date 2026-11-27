@@ -106,6 +106,8 @@ function lobbyView(): GameView {
   })
   return {
     mode: 'vs',
+    deck: 'words',
+    picturesAvailable: true,
     phase: { name: 'lobby' },
     board: null,
     teams: { red: team('red'), blue: team('blue') },
@@ -150,6 +152,8 @@ function gameView(opts: GameOpts): GameView {
   const guessing = opts.phase.name === 'guess' ? opts.phase.team : null
   return {
     mode: 'vs',
+    deck: 'words',
+    picturesAvailable: true,
     phase: opts.phase,
     board,
     teams: { red: team('red'), blue: team('blue') },

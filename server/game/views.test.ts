@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { GameView } from '../../src/shared/protocol'
 import { removeSeat, setConnected } from './roster'
-import { castVote, giveClue, makeClueGiver } from './rules'
+import { castVote, giveClue, makeClueGiver, setDeck } from './rules'
 import type { ServerState } from './state'
-import { colorIndex, lobby, startRed } from './testing'
+import { colorIndex, lobby, PICTURES, startRed } from './testing'
 import { viewFor, type Viewer } from './views'
 
 const URL = 'http://192.168.1.20:3000/'
@@ -17,6 +17,14 @@ const clue = () => startRed()
 const guess = () => giveClue(startRed(), 'ann', 'ocean', 2)
 
 describe('viewFor', () => {
+  it('carries the deck and whether pictures are available', () => {
+    const v = view(lobby(), { kind: 'tv', host: true })
+    expect(v.deck).toBe('words')
+    expect(v.picturesAvailable).toBe(false)
+    expect(viewFor(lobby(), { kind: 'tv', host: true }, URL, true).view.picturesAvailable).toBe(true)
+    expect(view(setDeck(lobby(), 'pictures', PICTURES), player('bob')).deck).toBe('pictures')
+  })
+
   it('never shows unrevealed colours to the TV, spectators or guessers mid-game', () => {
     for (const s of [clue(), guess()]) {
       for (const viewer of [

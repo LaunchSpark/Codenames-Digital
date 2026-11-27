@@ -8,6 +8,7 @@ import {
   makeClueGiver,
   moveSeat,
   newGame,
+  setDeck,
   settleVotes,
   skipTurn,
   startGame,
@@ -19,6 +20,8 @@ export type Sender = { host: boolean; seatId: string | null }
 
 export interface DispatchContext {
   words: readonly string[]
+  /** Picture ids found at startup (`card-0`, …); empty when there are none. */
+  pictures: readonly string[]
   rand: () => number
   newId: () => string
   newToken: () => string
@@ -68,9 +71,9 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
       return { state: undo(s, seated(from)) }
 
     case 'host:start':
-      return { state: startGame(s, ctx.words, ctx.rand) }
+      return { state: startGame(s, ctx.words, ctx.rand, ctx.pictures) }
     case 'host:new-game':
-      return { state: newGame(s, ctx.words, ctx.rand) }
+      return { state: newGame(s, ctx.words, ctx.rand, ctx.pictures) }
     case 'host:lobby':
       return { state: backToLobby(s) }
     case 'host:make-clue-giver':
@@ -85,6 +88,8 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
       return { state: shuffleTeams(s, ctx.rand) }
     case 'host:undo':
       return { state: hostUndo(s, msg.steps) }
+    case 'host:set-deck':
+      return { state: setDeck(s, msg.deck, ctx.pictures) }
   }
 }
 
@@ -109,6 +114,7 @@ const SHAPES: Record<ClientMessage['type'], (m: Record<string, unknown>) => bool
   'host:undo': (m) => isNumber(m.steps),
   'host:move-player': (m) => isString(m.playerId) && isTeam(m.team),
   'host:shuffle-teams': () => true,
+  'host:set-deck': (m) => m.deck === 'words' || m.deck === 'pictures',
 }
 
 export function parseClientMessage(raw: string): ClientMessage {

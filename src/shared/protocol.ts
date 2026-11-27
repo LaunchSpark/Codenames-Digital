@@ -57,8 +57,12 @@ export interface TeamView {
 
 export interface GameView {
   mode: Mode
+  /** The lobby's deck choice; a running game was dealt from it. */
+  deck: Deck
+  /** At least a board's worth of pictures was found at startup; Pictures can't be picked otherwise. */
+  picturesAvailable: boolean
   phase: Phase
-  /** 25 cards, row-major; null in lobby. */
+  /** 20 or 25 cards, row-major; null in lobby. */
   board: CardView[] | null
   teams: Record<Team, TeamView>
   /** Team owning 9 cards and going first; null in lobby. */
@@ -145,6 +149,8 @@ export type ClientMessage =
   | { type: 'host:move-player'; playerId: string; team: Team }
   /** Lobby only: everyone into two balanced teams, random order. */
   | { type: 'host:shuffle-teams' }
+  /** Lobby only; Pictures needs picturesAvailable. */
+  | { type: 'host:set-deck'; deck: Deck }
 
 export const SEAT_STORAGE_KEY = 'codenames-seat'
 export const WS_PATH = '/ws'
