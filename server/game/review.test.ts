@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { removeSeat, setConnected } from './roster'
-import { clueVerdict, settle, submitClue, withdrawClue } from './review'
+import { clueVerdict, expireClue, settle, submitClue, withdrawClue } from './review'
 import { makeClueGiver, skipTurn } from './rules'
 import type { ServerState } from './state'
 import { codeOf, startRed } from './testing'
@@ -20,10 +20,17 @@ describe('clue review', () => {
     expect(game(s).timeline).toEqual([])
   })
 
-  it("goes straight through when blue's clue-giver is offline", () => {
+  it("waits for blue's clue-giver even while their phone is offline", () => {
     const s = submitClue(setConnected(startRed(), 'dee', -1), 'ann', 'ocean', 2)
-    expect(phaseName(s)).toBe('guess')
-    expect(game(s).pendingClue).toBeNull()
+    expect(phaseName(s)).toBe('clue')
+    expect(game(s).pendingClue).not.toBeNull()
+  })
+
+  it('expiring approves a clue only if its checker is still offline', () => {
+    const offline = settle(setConnected(waiting(), 'dee', -1))
+    expect(phaseName(expireClue(offline))).toBe('guess')
+    expect(phaseName(expireClue(waiting()))).toBe('clue')
+    expect(phaseName(expireClue(settle(setConnected(offline, 'dee', 1))))).toBe('clue')
   })
 
   it('goes straight through with no blue clue-giver', () => {
@@ -89,18 +96,19 @@ describe('clue review', () => {
     expect(phaseName(clueVerdict(s, 'dee', true, { word: 'wave', number: 3 }))).toBe('guess')
   })
 
-  it('checker going offline approves the waiting clue', () => {
-    expect(phaseName(settle(setConnected(waiting(), 'dee', -1)))).toBe('guess')
+  it('checker going offline (a refresh, a locked phone) keeps the clue waiting', () => {
+    const s = settle(setConnected(waiting(), 'dee', -1))
+    expect(phaseName(s)).toBe('clue')
+    expect(game(s).pendingClue).not.toBeNull()
   })
 
   it("swapping red's clue-giver drops the waiting clue", () => {
     expect(game(makeClueGiver(waiting(), 'bob')).pendingClue).toBeNull()
   })
 
-  it("swapping blue's clue-giver keeps it; an offline new checker approves it", () => {
+  it("swapping blue's clue-giver keeps it, even if the new one is offline for now", () => {
     expect(game(makeClueGiver(waiting(), 'eve')).pendingClue).not.toBeNull()
-    const offline = makeClueGiver(setConnected(waiting(), 'eve', -1), 'eve')
-    expect(phaseName(offline)).toBe('guess')
+    expect(game(makeClueGiver(setConnected(waiting(), 'eve', -1), 'eve')).pendingClue).not.toBeNull()
   })
 
   it('a board change clears it', () => {

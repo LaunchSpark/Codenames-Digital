@@ -1,7 +1,7 @@
 import type { ServerMessage } from '../src/shared/protocol'
 import { dispatch, parseClientMessage, type DispatchContext } from './game/dispatch'
 import { emptyState, seatByToken, setConnected } from './game/roster'
-import { settle } from './game/review'
+import { awaitingReturn, expireClue, settle } from './game/review'
 import { GameError, type ServerState } from './game/state'
 import { DECKS } from './game/board'
 import { viewFor, type Viewer } from './game/views'
@@ -30,8 +30,10 @@ export interface Hub {
   state(): ServerState
 }
 
-export function createHub(opts: { joinUrl: string; ctx: DispatchContext }): Hub {
+export function createHub(opts: { joinUrl: string; ctx: DispatchContext; clueGraceMs?: number }): Hub {
   let state = emptyState()
+  /** Pending grace-period check for a waiting clue whose checker is offline. */
+  let clueTimer: ReturnType<typeof setTimeout> | null = null
   const picturesAvailable = opts.ctx.pictures.length >= DECKS.pictures.size
   const conns = new Map<HubSocket, Conn>()
 
@@ -44,7 +46,31 @@ export function createHub(opts: { joinUrl: string; ctx: DispatchContext }): Hub 
         ? { kind: 'player', seatId: conn.seatId }
         : { kind: 'spectator' }
 
+  /**
+   * A waiting clue whose checker dropped (a refresh, a locked phone) gets a
+   * grace period to come back before it goes through. Re-checked on every
+   * broadcast, so one timer covers drops, returns and new clues.
+   */
+  const armClueTimer = () => {
+    if (!awaitingReturn(state)) {
+      if (clueTimer) clearTimeout(clueTimer)
+      clueTimer = null
+      return
+    }
+    clueTimer ??= setTimeout(() => {
+      clueTimer = null
+      const next = expireClue(state)
+      if (next !== state) {
+        state = next
+        broadcast()
+      }
+    }, opts.clueGraceMs ?? 15_000)
+    // Never hold the process open just for this.
+    clueTimer.unref?.()
+  }
+
   const broadcast = () => {
+    armClueTimer()
     for (const [socket, conn] of conns) {
       if (!conn.client) continue
       send(socket, { type: 'state', ...viewFor(state, viewerOf(conn), opts.joinUrl, picturesAvailable) })
