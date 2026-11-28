@@ -1,5 +1,6 @@
-import type { CSSProperties } from 'react'
+import { useRef } from 'react'
 import type { CardView } from '../shared/protocol'
+import { useFitWords } from './fitWords'
 import './word-grid.css'
 
 interface WordGridProps {
@@ -32,8 +33,10 @@ export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, dis
   const gridClass = ['word-grid', `word-grid--${variant}`, dimmed && 'word-grid--dimmed', keyCard && 'word-grid--key']
     .filter(Boolean)
     .join(' ')
+  const gridRef = useRef<HTMLDivElement>(null)
+  useFitWords(gridRef, keyCard ? '' : cards.map((c) => c.word).join('|'))
   return (
-    <div className={gridClass}>
+    <div ref={gridRef} className={gridClass}>
       {cards.map((card, i) => {
         const className = [
           'word',
@@ -43,9 +46,6 @@ export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, dis
         ]
           .filter(Boolean)
           .join(' ')
-
-        // Longest run that can't wrap, so CSS can shrink long words to fit.
-        const style = { '--chars': Math.max(...card.word.split(/\s+/).map((w) => w.length)) } as CSSProperties
 
         const body = (
           <>
@@ -59,7 +59,6 @@ export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, dis
             key={i}
             type="button"
             className={className}
-            style={style}
             aria-pressed={myVotes.includes(i)}
             disabled={disabled}
             onClick={() => onTap(i)}
@@ -70,7 +69,6 @@ export function WordGrid({ cards, showPips, voterCount, myVotes = [], onTap, dis
           <div
             key={i}
             className={className}
-            style={style}
             role={keyCard ? 'img' : undefined}
             aria-label={keyCard ? `${card.word}: ${card.color ?? 'unknown'}${card.revealed ? ', picked' : ''}` : undefined}
           >

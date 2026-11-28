@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { chromium, type Browser } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { startServer } from '../server/index'
+import { BROWSER_CHANNEL } from './harness'
 
 const SCREENS = [
   'phone-spectator-lobby',
@@ -28,7 +29,7 @@ let server: Awaited<ReturnType<typeof startServer>>
 
 beforeAll(async () => {
   server = await startServer({ port: 0, joinUrl: 'http://x/', staticDir: fileURLToPath(new URL('../dist', import.meta.url)) })
-  browser = await chromium.launch()
+  browser = await chromium.launch({ channel: BROWSER_CHANNEL })
 })
 afterAll(async () => {
   await browser?.close()
