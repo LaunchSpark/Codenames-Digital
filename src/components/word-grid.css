@@ -37,9 +37,23 @@
   letter-spacing: 0.01em;
   text-align: center;
   text-transform: uppercase;
+  line-height: 1.1;
+}
+
+/* Breaks only between words. A word too long for its card overflows, and
+   fitWords.ts measures that and shrinks it via --fit (1 = full size). */
+.word__text {
+  display: block;
+  width: 100%;
+  font-size: calc(var(--fit, 1) * 1em);
+  overflow-wrap: normal;
+  hyphens: manual;
+}
+
+/* Last resort, at the minimum size: hyphenate (html lang="en"). */
+.word__text--wrap {
   overflow-wrap: anywhere;
   hyphens: auto;
-  line-height: 1.1;
 }
 
 button.word {
@@ -115,9 +129,8 @@ button.word:not(:disabled):active {
 
 .word-grid--tv .word {
   min-height: calc(7.5 * var(--tvu));
-  /* 2.2tvu, shrunk only as far as needed to fit the longest unbroken run
-     (--chars) across a cell: ~12.8tvu of room at ~0.65em per capital. */
-  font-size: min(calc(2.2 * var(--tvu)), calc(19 * var(--tvu) / var(--chars, 1)));
+  /* Full size; fitWords.ts shrinks words that don't fit. */
+  font-size: calc(2.2 * var(--tvu));
 }
 
 .word-grid--phone {
@@ -130,9 +143,8 @@ button.word:not(:disabled):active {
 
 .word-grid--phone .word {
   min-height: 52px;
-  /* Same fit rule for a cell ~(container - 80px)/5 wide; hyphenation
-     (html lang="en") catches anything still too long at the minimum size. */
-  font-size: clamp(0.5rem, min(2.9vw, calc((min(100vw, 520px) - 80px) * 0.28 / var(--chars, 1))), 0.9rem);
+  /* Full size; fitWords.ts shrinks words that don't fit. */
+  font-size: clamp(0.5rem, 2.9vw, 0.9rem);
 }
 
 /* A clue-giver's key card: solid colour tiles, no words. Unpicked tiles are

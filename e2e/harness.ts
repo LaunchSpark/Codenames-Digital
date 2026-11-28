@@ -27,6 +27,8 @@ export interface TableOptions {
   phonesAt?: [number, number]
   /** Seeded so tests get the same board every run. */
   rand?: () => number
+  /** Word pool the server deals from (read at each deal, so it can be refilled). */
+  words?: readonly string[]
 }
 
 export interface Phone {
@@ -46,6 +48,12 @@ export interface Table {
   close(): Promise<void>
 }
 
+/**
+ * E2E_CHANNEL=chrome runs the tests in the installed Chrome instead of
+ * Playwright's own Chromium (which no longer supports macOS 12).
+ */
+export const BROWSER_CHANNEL = process.env.E2E_CHANNEL || undefined
+
 const PHONE = devices['Pixel 7']
 const PHONE_WINDOW = { w: 460, h: 990 }
 
@@ -55,12 +63,14 @@ export async function openTable(opts: TableOptions): Promise<Table> {
   const joinUrl = `http://${ip}:${port}/`
   const tvUrl = `http://localhost:${port}/tv`
   const staticDir = fileURLToPath(new URL('../dist', import.meta.url))
-  const serverOpts = { port, joinUrl, staticDir, ctx: opts.rand ? { rand: opts.rand } : undefined }
+  const ctx = { ...(opts.rand && { rand: opts.rand }), ...(opts.words && { words: opts.words }) }
+  const serverOpts = { port, joinUrl, staticDir, ctx }
   let server = await startServer(serverOpts)
 
   const browsers: Browser[] = []
   const launch = async (x: number, y: number, w: number, h: number) => {
     const browser = await chromium.launch({
+      channel: BROWSER_CHANNEL,
       headless: opts.headless,
       args: opts.headless ? [] : [`--window-position=${x},${y}`, `--window-size=${w},${h}`],
     })
