@@ -1,14 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Undo2 } from 'lucide-react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { WordGrid } from '../components/WordGrid'
-import { guessesLeftText, TEAM_NAME } from '../components/teams'
-import type { CardView, ClientMessage, Phase, Team } from '../shared/protocol'
+import { checkingLine, guessesLeftText, otherTeam, TEAM_NAME } from '../components/teams'
+import type { CardView, Clue, ClientMessage, Phase, Team } from '../shared/protocol'
 import type { PhoneScreenProps } from './types'
 
 export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps) {
   const { phase } = view
   const myClueTurn = phase.name === 'clue' && phase.team === you.team
+  /** My clue, waiting for the other clue-giver. */
+  const myWaiting = you.pendingClue?.team === you.team ? you.pendingClue : null
+  /** Their clue, waiting for me to check it. */
+  const toCheck = you.pendingClue && you.pendingClue.team !== you.team ? you.pendingClue : null
+  const writing = myClueTurn && !myWaiting
+  const rejected = you.rejectedClue
 
   return (
     <div className={`phone-game team-${you.team}`}>
@@ -23,12 +29,34 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
         for each new clue (keyed on the clue count).
       */}
       <div className="turn-slot">
-        <div aria-hidden={!myClueTurn} inert={!myClueTurn} className={myClueTurn ? '' : 'is-hidden'}>
-          <ClueForm key={view.clues.length} send={send} disabled={disabled || !myClueTurn} />
+        <div aria-hidden={!writing} inert={!writing} className={writing ? '' : 'is-hidden'}>
+          {rejected && (
+            <p className="clue-rejected">
+              {TEAM_NAME[otherTeam(rejected.team)]} rejected {clueText(rejected)} — try another
+            </p>
+          )}
+          <ClueForm
+            key={`${view.clues.length}-${rejected?.word ?? ''}`}
+            initial={rejected}
+            send={send}
+            disabled={disabled || !writing}
+          />
         </div>
-        <p className={`phone-status${myClueTurn ? ' is-hidden' : ''}`} aria-hidden={myClueTurn}>
-          {statusLine(phase, you.team)}
-        </p>
+        {toCheck ? (
+          <CheckClue clue={toCheck} send={send} disabled={disabled} />
+        ) : myWaiting ? (
+          <div className="clue-waiting">
+            <p className="phone-status phone-status--active">
+              Waiting for {TEAM_NAME[otherTeam(myWaiting.team)]} to check {clueText(myWaiting)}…
+            </p>
+            <button type="button" className="btn btn--ghost" disabled={disabled}
+              onClick={() => send({ type: 'withdraw-clue' })}>Take back</button>
+          </div>
+        ) : (
+          <p className={`phone-status${writing ? ' is-hidden' : ''}`} aria-hidden={writing}>
+            {view.checking ? checkingLine(view.checking) : statusLine(phase, you.team)}
+          </p>
+        )}
       </div>
 
       {view.board && (
@@ -39,6 +67,7 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
           variant="phone"
           dimmed={!myClueTurn}
           keyCard
+          pictures={view.deck === 'pictures'}
         />
       )}
 
@@ -70,6 +99,27 @@ function MyWords({ cards, team, pictures }: { cards: CardView[]; team: Team; pic
   )
 }
 
+const clueText = (clue: Clue) => `${clue.word.toUpperCase()} ${clue.number}`
+
+/** The other team's clue, for this clue-giver to approve or reject. Buzzes once when it arrives. */
+function CheckClue({ clue, send, disabled }: { clue: Clue; send: (m: ClientMessage) => void; disabled: boolean }) {
+  useEffect(() => {
+    navigator.vibrate?.(200)
+  }, [clue])
+  return (
+    <section className="check-clue" aria-label={`${TEAM_NAME[clue.team]}'s clue`}>
+      <p className="check-clue__label">{TEAM_NAME[clue.team]}'s clue — OK to give?</p>
+      <p className="check-clue__clue">{clueText(clue)}</p>
+      <div className="check-clue__actions">
+        <button type="button" className="btn btn--ghost" disabled={disabled}
+          onClick={() => send({ type: 'clue-verdict', approve: false, word: clue.word, number: clue.number })}>Reject</button>
+        <button type="button" className="btn btn--primary" disabled={disabled}
+          onClick={() => send({ type: 'clue-verdict', approve: true, word: clue.word, number: clue.number })}>Approve</button>
+      </div>
+    </section>
+  )
+}
+
 function statusLine(phase: Phase, mine: Team) {
   if (phase.name === 'guess') {
     const clue = `${phase.clue.word} ${phase.clue.number}`
@@ -82,9 +132,18 @@ function statusLine(phase: Phase, mine: Team) {
 }
 
 /** Remounted for each new clue, so every turn starts blank. */
-function ClueForm({ send, disabled }: { send: (m: ClientMessage) => void; disabled: boolean }) {
-  const [word, setWord] = useState('')
-  const [number, setNumber] = useState(1)
+function ClueForm({
+  initial,
+  send,
+  disabled,
+}: {
+  /** A rejected clue, handed back for editing. */
+  initial: Clue | null
+  send: (m: ClientMessage) => void
+  disabled: boolean
+}) {
+  const [word, setWord] = useState(initial?.word ?? '')
+  const [number, setNumber] = useState(initial?.number ?? 1)
   const trimmed = word.trim()
 
   return (

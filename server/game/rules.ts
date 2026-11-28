@@ -1,7 +1,8 @@
-import type { Deck, Phase, Team } from '../../src/shared/protocol'
+import type { Clue, Deck, Phase, Team } from '../../src/shared/protocol'
 import { DECKS, newBoard, otherTeam } from './board'
 import { assignTeam, isConnected, pickClueGivers, seatOf } from './roster'
 import { GameError, type Board, type Game, type Seat, type ServerState, type Vote } from './state'
+import { settle, settleClue } from './review'
 import { commit, logged, type CommitOptions } from './undo'
 
 const CLUE_WORD = /^[\p{L}]+(-[\p{L}]+)*$/u
@@ -53,8 +54,31 @@ export function dealGame(
   pictures: readonly string[] = [],
 ): ServerState {
   const { state, clueGivers } = pickClueGivers(s)
-  const board = s.deck === 'pictures' ? newBoard(pictures, rand, DECKS.pictures) : newBoard(words, rand)
-  return { ...state, game: { board, history: [], timeline: [], clueGivers, votes: {} } }
+  const board = dealBoard(s, words, rand, pictures)
+  return {
+    ...state,
+    game: { board, history: [], timeline: [], clueGivers, votes: {}, pendingClue: null, rejectedClue: null },
+  }
+}
+
+/** A fresh board from the lobby's deck. */
+function dealBoard(s: ServerState, words: readonly string[], rand: () => number, pictures: readonly string[]): Board {
+  return s.deck === 'pictures' ? newBoard(pictures, rand, DECKS.pictures) : newBoard(words, rand)
+}
+
+/** Host: swap in a fresh board mid-game. Clue-givers and roster stay; clues, votes and undo history start over. */
+export function redrawBoard(
+  s: ServerState,
+  words: readonly string[],
+  rand: () => number,
+  pictures: readonly string[] = [],
+): ServerState {
+  const game = requireGame(s)
+  const board = dealBoard(s, words, rand, pictures)
+  return {
+    ...s,
+    game: { ...game, board, history: [], timeline: [], votes: {}, pendingClue: null, rejectedClue: null },
+  }
 }
 
 export function guessersOf(s: ServerState, team: Team): Seat[] {
@@ -75,7 +99,13 @@ export function remaining(board: Board, team: Team): number {
   return board.cards.filter((c) => c.color === team && !c.revealed).length
 }
 
+/** Validates and commits a clue at once, skipping review. */
 export function giveClue(s: ServerState, seatId: string, rawWord: string, number: number): ServerState {
+  return commitClue(s, validateClue(s, seatId, rawWord, number))
+}
+
+/** The clue-giver's clue, checked; throws as giveClue always has. */
+export function validateClue(s: ServerState, seatId: string, rawWord: string, number: number): Clue {
   const game = requireGame(s)
   const { phase } = game.board
   if (phase.name !== 'clue' || game.clueGivers[phase.team] !== seatId) {
@@ -92,15 +122,21 @@ export function giveClue(s: ServerState, seatId: string, rawWord: string, number
   if (game.board.cards.some((c) => c.word.toLowerCase() === lower)) {
     throw new GameError('invalid-clue', "The clue can't be a word on the board")
   }
-  const clue = { team: phase.team, word, number }
+  return { team: phase.team, word, number }
+}
+
+/** Puts a validated clue on the board and starts guessing. */
+export function commitClue(s: ServerState, clue: Clue): ServerState {
+  const game = requireGame(s)
+  const { team, word, number } = clue
   return commit(
     s,
     {
       ...game.board,
       clues: [...game.board.clues, clue],
-      phase: { name: 'guess', team: phase.team, clue, guessesLeft: number + 1, guessesMade: 0 },
+      phase: { name: 'guess', team, clue, guessesLeft: number + 1, guessesMade: 0 },
     },
-    `${teamName(phase.team)} clue: ${word.toUpperCase()} ${number}`,
+    `${teamName(team)} clue: ${word.toUpperCase()} ${number}`,
   )
 }
 
@@ -212,12 +248,14 @@ export function skipTurn(s: ServerState): ServerState {
 export function makeClueGiver(s: ServerState, seatId: string): ServerState {
   const seat = seatOf(s, seatId)
   if (!seat) throw new GameError('unknown-player', 'No such player')
+  // In the lobby: they give their team's clues next game.
+  if (!s.game) return { ...s, roster: { ...s.roster, picked: { ...s.roster.picked, [seat.team]: seatId } } }
   const game = requireGame(s)
   const label = `Host made ${seat.name} ${teamName(seat.team)}'s clue-giver`
-  return {
+  return settleClue({
     ...s,
     game: { ...logged(game, label), clueGivers: { ...game.clueGivers, [seat.team]: seatId }, votes: {} },
-  }
+  })
 }
 
 /**
@@ -230,7 +268,7 @@ export function moveSeat(s: ServerState, seatId: string, team: Team): ServerStat
   if (game && (game.clueGivers.red === seatId || game.clueGivers.blue === seatId)) {
     throw new GameError('clue-giver-locked', 'Make someone else clue-giver before moving this player')
   }
-  return settleVotes(assignTeam(s, seatId, team))
+  return settle(assignTeam(s, seatId, team))
 }
 
 export function newGame(

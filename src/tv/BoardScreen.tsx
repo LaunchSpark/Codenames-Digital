@@ -1,5 +1,5 @@
 import { Pips, WordGrid } from '../components/WordGrid'
-import { guessesLeftText, TEAM_NAME } from '../components/teams'
+import { checkingLine, guessesLeftText, TEAM_NAME } from '../components/teams'
 import type { GameView, Team } from '../shared/protocol'
 import { HostMenu } from './HostMenu'
 import { JoinQr } from './JoinQr'
@@ -51,6 +51,7 @@ export function BoardScreen({ view, you, send, disabled }: TvScreenProps) {
 function TurnStatus({ view }: { view: GameView }) {
   const { phase } = view
   if (phase.name === 'clue') {
+    if (view.checking) return <p className="tv-status__line">{checkingLine(view.checking)}</p>
     return <p className="tv-status__line">{TEAM_NAME[phase.team]} is thinking of a clue</p>
   }
   if (phase.name === 'guess') {

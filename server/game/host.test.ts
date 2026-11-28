@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { seededRandom } from './random'
-import { changeSeat, removeSeat, setConnected } from './roster'
-import { backToLobby, giveClue, makeClueGiver, newGame, skipTurn, startGame } from './rules'
-import { codeOf, lobby, startRed } from './testing'
+import { assignTeam, changeSeat, dueClueGiver, removeSeat, setConnected } from './roster'
+import { backToLobby, giveClue, makeClueGiver, newGame, redrawBoard, setDeck, skipTurn, startGame } from './rules'
+import { codeOf, lobby, PICTURES, startRed } from './testing'
 import { WORDS } from './words'
 
 const rand = seededRandom(42)
@@ -37,9 +37,9 @@ describe('make clue-giver', () => {
     expect(s.game!.clueGivers.red).toBe('bob')
   })
 
-  it('needs a real player and a running game', () => {
+  it('needs a real player', () => {
     expect(codeOf(() => makeClueGiver(startRed(), 'nobody'))).toBe('unknown-player')
-    expect(codeOf(() => makeClueGiver(lobby(), 'ann'))).toBe('not-in-lobby')
+    expect(codeOf(() => makeClueGiver(lobby(), 'nobody'))).toBe('unknown-player')
   })
 })
 
@@ -51,6 +51,44 @@ describe('skip turn', () => {
   })
 })
 
+describe('picking clue-givers in the lobby', () => {
+  // Red joins ann, bob, cy; blue joins dee, eve.
+  const redGiver = (s: ReturnType<typeof lobby>) => startGame(s, WORDS, rand).game!.clueGivers.red
+
+  it('the host picks who gives clues next game', () => {
+    const s = makeClueGiver(lobby(), 'cy')
+    expect(dueClueGiver(s, 'red')).toBe('cy')
+    expect(redGiver(s)).toBe('cy')
+    expect(startGame(s, WORDS, rand).game!.clueGivers.blue).toBe('dee')
+  })
+
+  it('without a pick, the rotation decides who is due', () => {
+    expect(dueClueGiver(lobby(), 'red')).toBe('ann')
+    expect(dueClueGiver(lobby(), 'blue')).toBe('dee')
+  })
+
+  it('rotation carries on after the picked player', () => {
+    const s = startGame(makeClueGiver(lobby(), 'bob'), WORDS, rand)
+    expect(newGame(s, WORDS, rand).game!.clueGivers.red).toBe('cy')
+  })
+
+  it('the pick is used once', () => {
+    const s = backToLobby(startGame(makeClueGiver(lobby(), 'cy'), WORDS, rand))
+    expect(dueClueGiver(s, 'red')).toBe('ann')
+  })
+
+  it('a pick is dropped if that player leaves or switches team', () => {
+    expect(redGiver(removeSeat(makeClueGiver(lobby(), 'cy'), 'cy'))).toBe('ann')
+    const moved = assignTeam(makeClueGiver(lobby(), 'cy'), 'cy', 'blue')
+    expect(dueClueGiver(moved, 'red')).toBe('ann')
+    expect(dueClueGiver(moved, 'blue')).toBe('dee')
+  })
+
+  it('a disconnected pick is passed over like the rotation does', () => {
+    expect(redGiver(setConnected(makeClueGiver(lobby(), 'cy'), 'cy', -1))).toBe('ann')
+  })
+})
+
 describe('back to lobby', () => {
   it('keeps players and rotation', () => {
     const started = startGame(lobby(), WORDS, rand)
@@ -58,6 +96,31 @@ describe('back to lobby', () => {
     expect(s.game).toBeNull()
     expect(s.roster).toEqual(started.roster)
     expect(s.roster.nextClueGiver).toEqual({ red: 1, blue: 1 })
+  })
+})
+
+describe('redraw', () => {
+  it('deals a fresh board and keeps the clue-givers', () => {
+    const before = giveClue(startRed(), 'ann', 'ocean', 2)
+    const s = redrawBoard(before, WORDS, seededRandom(9), PICTURES)
+    const game = s.game!
+    expect(game.clueGivers).toEqual(before.game!.clueGivers)
+    expect(game.board.cards.map((c) => c.word)).not.toEqual(before.game!.board.cards.map((c) => c.word))
+    expect(game.board.cards).toHaveLength(25)
+    expect(game.board.clues).toEqual([])
+    expect(game.board.phase).toEqual({ name: 'clue', team: game.board.startingTeam })
+    expect(game.history).toEqual([])
+    expect(game.timeline).toEqual([])
+    expect(s.roster).toEqual(before.roster)
+  })
+
+  it('redraws pictures on a picture board', () => {
+    const s = redrawBoard(startRed(setDeck(lobby(), 'pictures', PICTURES)), WORDS, seededRandom(9), PICTURES)
+    expect(s.game!.board.cards).toHaveLength(20)
+  })
+
+  it('needs a running game', () => {
+    expect(codeOf(() => redrawBoard(lobby(), WORDS, rand, PICTURES))).toBe('not-in-lobby')
   })
 })
 

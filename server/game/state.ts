@@ -14,6 +14,8 @@ export interface Roster {
   order: Record<Team, string[]>
   /** Rotation index used at the next game start (wraps over current list length). */
   nextClueGiver: Record<Team, number>
+  /** The host's lobby pick for each team's next clue-giver; used once, at the next game start. */
+  picked: Record<Team, string | null>
 }
 
 export interface Card {
@@ -54,6 +56,10 @@ export interface Game {
    * Cleared on every Board change, except a reveal that keeps the turn going.
    */
   votes: Record<string, Vote>
+  /** A clue waiting for the other team's clue-giver; `by` is the giver's seat. Outside Board on purpose. */
+  pendingClue: { clue: Clue; by: string } | null
+  /** The giver's last rejected clue, handed back to their clue box. */
+  rejectedClue: Clue | null
 }
 
 export interface ServerState {

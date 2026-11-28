@@ -67,6 +67,26 @@ describe('Lobby', () => {
     expect((within(deck).getByRole('button', { name: 'Words' }) as HTMLButtonElement).disabled).toBe(true)
   })
 
+  it('host picks a clue-giver; whoever is due is badged', () => {
+    const { view, you } = fixture('tv-lobby-host')
+    const send = renderLobby(view, you)
+    const red = screen.getByRole('list', { name: 'Red team' })
+    const ana = within(red).getByText('Ana', { exact: true }).closest('li')!
+    const cara = within(red).getByText('Cara', { exact: true }).closest('li')!
+    expect(within(ana).getByText('Clue-giver')).toBeTruthy()
+    expect(within(cara).queryByText('Clue-giver')).toBeNull()
+    expect((within(ana).getByRole('button', { name: 'Make Ana clue-giver' }) as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(within(cara).getByRole('button', { name: 'Make Cara clue-giver' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:make-clue-giver', playerId: 'p3' })
+  })
+
+  it('only the host can pick clue-givers, but everyone sees who is due', () => {
+    const { view, you } = fixture('tv-lobby')
+    renderLobby(view, you)
+    expect(screen.queryByRole('button', { name: /clue-giver/ })).toBeNull()
+    expect(screen.getAllByText('Clue-giver')).toHaveLength(2)
+  })
+
   it('lists both rosters in order', () => {
     const { view, you } = fixture('tv-lobby')
     renderLobby(view, you)
@@ -146,6 +166,12 @@ describe('Lobby', () => {
 })
 
 describe('BoardScreen', () => {
+  it('says when a clue is being checked, without showing it', () => {
+    const { view, you } = fixture('tv-checking')
+    render(<BoardScreen view={view} you={you} send={vi.fn()} />)
+    expect(screen.getByText("Blue is checking Red's clue…")).toBeTruthy()
+  })
+
   it('draws a picture board', () => {
     const { view, you } = fixture('tv-guess-pictures')
     const { container } = render(<BoardScreen view={view} you={you} send={vi.fn()} />)
@@ -173,6 +199,35 @@ describe('BoardScreen', () => {
     render(<BoardScreen view={view} you={you} send={vi.fn()} />)
     const items = within(screen.getByRole('list', { name: 'Clues' })).getAllByRole('listitem')
     expect(items.map((li) => li.textContent)).toEqual(['OCEAN 3', 'MOUNTAIN 2', 'ANIMAL 2'])
+  })
+
+  it('host menu kills the game after confirming', () => {
+    const { view, you } = fixture('tv-guess-host')
+    const send = vi.fn()
+    render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Kill game' }))
+    expect(send).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, end it' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:lobby' })
+  })
+
+  it('host menu redraws the board after confirming', () => {
+    const { view, you } = fixture('tv-guess-host')
+    const send = vi.fn()
+    render(<BoardScreen view={view} you={you} send={send} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Redraw words' }))
+    expect(send).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, redraw' }))
+    expect(send).toHaveBeenCalledWith({ type: 'host:redraw' })
+  })
+
+  it('the redraw button names pictures on a picture board', () => {
+    const { view, you } = fixture('tv-guess-host')
+    render(<BoardScreen view={{ ...view, deck: 'pictures' }} you={you} send={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Host menu' }))
+    expect(screen.getByRole('button', { name: 'Redraw pictures' })).toBeTruthy()
   })
 
   it('host menu is host-only and sends skip-turn', () => {

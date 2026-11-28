@@ -71,8 +71,8 @@ const leaks = (v: GameView) => (v.board ?? []).filter((c) => !c.revealed && c.co
 let server: Awaited<ReturnType<typeof startServer>>
 const clients: Client[] = []
 
-async function boot() {
-  server = await startServer({ port: 0, joinUrl: 'http://test/', ctx: { rand: seededRandom(3) } })
+async function boot(opts: { clueGraceMs?: number } = {}) {
+  server = await startServer({ port: 0, joinUrl: 'http://test/', ctx: { rand: seededRandom(3) }, ...opts })
 }
 
 async function open() {
@@ -105,7 +105,16 @@ async function startedTable() {
   const started = await tv.state((s) => s.view.phase.name === 'clue')
   const team = started.view.startingTeam!
   const [mine, theirs] = team === 'red' ? [red, blue] : [blue, red]
-  return { tv, team, giver: mine[0], guessers: [mine[1], mine[2]], otherGuesser: theirs[1] }
+  return { tv, team, giver: mine[0], checker: theirs[0], guessers: [mine[1], mine[2]], otherGuesser: theirs[1] }
+}
+
+type Table = Awaited<ReturnType<typeof startedTable>>
+
+/** The giver sends ZZYZX 2 and the other clue-giver approves it once it reaches them. */
+async function approvedClue({ giver, checker }: Table) {
+  giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
+  await checker.c.state((s) => s.you.kind === 'player' && s.you.pendingClue !== null)
+  checker.c.send({ type: 'clue-verdict', approve: true, word: 'zzyzx', number: 2 })
 }
 
 afterEach(async () => {
@@ -144,14 +153,15 @@ describe('game server', () => {
 
   it('keeps a seat connected, and its vote, until its last socket closes', async () => {
     await boot()
-    const { team, giver, guessers } = await startedTable()
+    const table = await startedTable()
+    const { team, guessers } = table
     const [me, teammate] = guessers
 
     const second = await open()
     second.send({ type: 'hello', client: 'player', token: me.token })
     await second.state((s) => isPlayer(s.you, me.playerId))
 
-    giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
+    await approvedClue(table)
     await me.c.state((s) => s.view.phase.name === 'guess')
     me.c.send({ type: 'vote', card: 0 })
     await me.c.state((s) => s.you.kind === 'player' && s.you.votes[0] === 0)
@@ -168,11 +178,35 @@ describe('game server', () => {
     expect(gone.view.board![0].votes).toBe(0)
   })
 
+  it('a checker who refreshes still gets to check the clue', async () => {
+    await boot()
+    const table = await startedTable()
+    table.giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
+    await table.checker.c.state((s) => s.you.kind === 'player' && s.you.pendingClue !== null)
+    await table.checker.c.close()
+    const again = await open()
+    again.send({ type: 'hello', client: 'player', token: table.checker.token })
+    const s = await again.state((x) => x.you.kind === 'player')
+    expect(s.view.phase.name).toBe('clue')
+    expect(s.you).toMatchObject({ pendingClue: { word: 'zzyzx', number: 2 } })
+  })
+
+  it('a checker who stays away lets the clue through after the grace period', async () => {
+    await boot({ clueGraceMs: 50 })
+    const table = await startedTable()
+    table.giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
+    await table.checker.c.state((s) => s.you.kind === 'player' && s.you.pendingClue !== null)
+    await table.checker.c.close()
+    const after = await table.guessers[0].c.state((s) => s.view.phase.name === 'guess')
+    expect(after.view.checking).toBeNull()
+  })
+
   it('never sends a guesser the colour of an unrevealed card', async () => {
     await boot()
-    const { giver, guessers, otherGuesser } = await startedTable()
+    const table = await startedTable()
+    const { giver, guessers, otherGuesser } = table
 
-    giver.c.send({ type: 'clue', word: 'zzyzx', number: 2 })
+    await approvedClue(table)
     await guessers[0].c.state((s) => s.view.phase.name === 'guess')
     for (const g of guessers) g.c.send({ type: 'vote', card: 0 })
     await otherGuesser.c.state((s) => s.view.board?.[0].revealed === true)

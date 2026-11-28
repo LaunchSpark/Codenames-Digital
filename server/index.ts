@@ -16,6 +16,8 @@ export interface ServerOptions {
   staticDir?: string
   ctx?: Partial<DispatchContext>
   heartbeatMs?: number
+  /** How long a waiting clue waits for an offline checker to come back (default 15s). */
+  clueGraceMs?: number
 }
 
 export async function startServer(opts: ServerOptions): Promise<{ port: number; close(): Promise<void> }> {
@@ -27,7 +29,7 @@ export async function startServer(opts: ServerOptions): Promise<{ port: number; 
     newToken: () => randomBytes(16).toString('hex'),
     ...opts.ctx,
   }
-  const hub = createHub({ joinUrl: opts.joinUrl, ctx })
+  const hub = createHub({ joinUrl: opts.joinUrl, ctx, clueGraceMs: opts.clueGraceMs })
   // dev: look files up per request instead of caching the list at startup, so
   // rebuilding dist/ while hosting can't make a request hit a vanished file.
   const serve = opts.staticDir ? sirv(opts.staticDir, { single: true, dev: true }) : null

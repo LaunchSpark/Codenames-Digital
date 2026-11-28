@@ -210,3 +210,20 @@ button.word:not(:disabled):active {
   background: #000000a8;
   color: #fff;
 }
+
+/* TV: zoom past each card's own black frame and corner tab so the drawing
+   fills the tile (the tile clips the overflow), and shrink unpicked cards
+   less. Phones keep the whole card. */
+.word-grid--tv.word-grid--pictures {
+  --unpicked-scale: 0.97;
+}
+
+.word-grid--tv.word-grid--pictures .word__picture {
+  transform: scale(1.12);
+}
+
+/* A picture clue-giver's key card: square tiles, laid out like the board. */
+.word-grid--key.word-grid--pictures .word {
+  aspect-ratio: 1;
+  min-height: 0;
+}
