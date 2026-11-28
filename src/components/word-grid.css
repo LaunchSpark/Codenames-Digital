@@ -221,3 +221,9 @@ button.word:not(:disabled):active {
 .word-grid--tv.word-grid--pictures .word__picture {
   transform: scale(1.12);
 }
+
+/* A picture clue-giver's key card: square tiles, laid out like the board. */
+.word-grid--key.word-grid--pictures .word {
+  aspect-ratio: 1;
+  min-height: 0;
+}

@@ -26,6 +26,20 @@ const hub = () =>
     ctx: { words: WORDS, pictures: [], rand: seededRandom(1), newId: () => 'p1', newToken: () => 't1' },
   })
 
+describe('server id', () => {
+  it('stamps every state with an id that changes when the server restarts', () => {
+    const ids = [hub(), hub()].map((h) => {
+      const tv = new FakeSocket()
+      h.attach(tv, true)
+      tv.emit('message', JSON.stringify({ type: 'hello', client: 'tv' }))
+      const state = (tv.sent as { type: string; server?: string }[]).find((m) => m.type === 'state')!
+      return state.server as string
+    })
+    expect(ids[0]).toMatch(/\S/)
+    expect(ids[0]).not.toBe(ids[1])
+  })
+})
+
 describe('hub resilience', () => {
   it('survives a socket error such as a malformed frame', () => {
     const h = hub()

@@ -89,6 +89,12 @@ describe('lobby', () => {
     expect(screen.queryByText(/card-\d/)).toBeNull()
   })
 
+  it("a picture clue-giver's key card is laid out like the picture board", () => {
+    const { container } = setup('phone-cluegiver-pictures')
+    expect(container.querySelector('.word-grid--key.word-grid--pictures')).not.toBeNull()
+    expect(container.querySelector('.word-grid--key img')).toBeNull()
+  })
+
   it('a guesser sees pictures to vote on', () => {
     const { container } = setup('phone-guesser-pictures')
     expect(container.querySelectorAll('.word-grid img').length).toBeGreaterThan(0)

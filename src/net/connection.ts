@@ -12,6 +12,7 @@ export interface Snapshot {
 
 type Win = Pick<Window, 'addEventListener' | 'removeEventListener'> & {
   document: Pick<Document, 'visibilityState'>
+  location: Pick<Location, 'reload'>
 }
 
 export interface ConnectionOptions {
@@ -49,6 +50,8 @@ export function createConnection(opts: ConnectionOptions): Connection {
   let timer: ReturnType<typeof setTimeout> | null = null
   /** Token presented in this connection's hello, until the server rejects it. */
   let helloToken: string | null = null
+  /** The server instance this page has been talking to; a different one means it restarted. */
+  let serverId: string | null = null
 
   const update = (patch: Partial<Snapshot>) => {
     snapshot = { ...snapshot, ...patch }
@@ -68,6 +71,13 @@ export function createConnection(opts: ConnectionOptions): Connection {
         storage.setItem(SEAT_STORAGE_KEY, msg.token)
         break
       case 'state':
+        // The server restarted, probably with a new build: reload rather than
+        // keep running this page's old code against it.
+        if (serverId !== null && msg.server !== serverId) {
+          win.location.reload()
+          return
+        }
+        serverId = msg.server
         if (msg.you.kind === 'spectator' && helloToken !== null) {
           // The server doesn't know our seat (e.g. it restarted): forget it.
           storage.removeItem(SEAT_STORAGE_KEY)

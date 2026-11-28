@@ -60,6 +60,7 @@ function fakeWindow() {
     removeEventListener: target.removeEventListener.bind(target),
     dispatchEvent: target.dispatchEvent.bind(target),
     document: { visibilityState: 'visible' as DocumentVisibilityState },
+    location: { reload: vi.fn() },
   }
 }
 
@@ -90,6 +91,24 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers()
+})
+
+describe('server restarts', () => {
+  it('reloads the page when the server comes back as a new instance', () => {
+    const { win } = setup()
+    latest().open()
+    latest().receive({ type: 'state', view, you: spectator, server: 'a' })
+    latest().drop()
+    vi.runOnlyPendingTimers()
+    latest().open()
+    latest().receive({ type: 'state', view, you: spectator, server: 'a' })
+    expect(win.location.reload).not.toHaveBeenCalled()
+    latest().drop()
+    vi.runOnlyPendingTimers()
+    latest().open()
+    latest().receive({ type: 'state', view, you: spectator, server: 'b' })
+    expect(win.location.reload).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('hello', () => {
@@ -128,12 +147,12 @@ describe('seat token', () => {
   it('forgets a token the server no longer knows', () => {
     const { storage } = setup({ stored: { [SEAT_STORAGE_KEY]: 'old' } })
     latest().open()
-    latest().receive({ type: 'state', view, you: spectator })
+    latest().receive({ type: 'state', view, you: spectator, server: 's1' })
     expect(storage.removeItem).toHaveBeenCalledTimes(1)
     expect(storage.removeItem).toHaveBeenCalledWith(SEAT_STORAGE_KEY)
 
     // Still a spectator on later broadcasts: nothing more to forget.
-    latest().receive({ type: 'state', view, you: spectator })
+    latest().receive({ type: 'state', view, you: spectator, server: 's1' })
     expect(storage.removeItem).toHaveBeenCalledTimes(1)
 
     // And the next reconnect no longer presents the stale token.
@@ -141,14 +160,14 @@ describe('seat token', () => {
     vi.advanceTimersByTime(500)
     latest().open()
     expect(latest().sent).toEqual([{ type: 'hello', client: 'player', token: null }])
-    latest().receive({ type: 'state', view, you: spectator })
+    latest().receive({ type: 'state', view, you: spectator, server: 's1' })
     expect(storage.removeItem).toHaveBeenCalledTimes(1)
   })
 
   it('keeps a token the server recognises', () => {
     const { storage } = setup({ stored: { [SEAT_STORAGE_KEY]: 'good' } })
     latest().open()
-    latest().receive({ type: 'state', view, you: player })
+    latest().receive({ type: 'state', view, you: player, server: 's1' })
     expect(storage.removeItem).not.toHaveBeenCalled()
   })
 })
@@ -244,7 +263,7 @@ describe('snapshot', () => {
   it('a state frame sets view and you', () => {
     const { last } = setup()
     latest().open()
-    latest().receive({ type: 'state', view, you: player })
+    latest().receive({ type: 'state', view, you: player, server: 's1' })
     expect(last().view).toEqual(view)
     expect(last().you).toEqual(player)
   })
@@ -254,14 +273,14 @@ describe('snapshot', () => {
     latest().open()
     latest().receive({ type: 'error', code: 'name-taken', message: 'That name is taken' })
     expect(last().error).toEqual({ code: 'name-taken', message: 'That name is taken' })
-    latest().receive({ type: 'state', view, you: spectator })
+    latest().receive({ type: 'state', view, you: spectator, server: 's1' })
     expect(last().error).toBeNull()
   })
 
   it('keeps the last view while reconnecting', () => {
     const { last } = setup()
     latest().open()
-    latest().receive({ type: 'state', view, you: player })
+    latest().receive({ type: 'state', view, you: player, server: 's1' })
     latest().drop()
     expect(last().view).toEqual(view)
   })

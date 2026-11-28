@@ -67,6 +67,7 @@ export function ClueGiverScreen({ view, you, send, disabled }: PhoneScreenProps)
           variant="phone"
           dimmed={!myClueTurn}
           keyCard
+          pictures={view.deck === 'pictures'}
         />
       )}
 

@@ -125,7 +125,8 @@ export type ErrorCode =
 
 export type ServerMessage =
   | { type: 'welcome'; token: string; playerId: string }
-  | { type: 'state'; view: GameView; you: You }
+  /** `server` is new each time the server starts, so a page left open across a restart knows to reload. */
+  | { type: 'state'; view: GameView; you: You; server: string }
   | { type: 'error'; code: ErrorCode; message: string }
 
 export type ClientMessage =

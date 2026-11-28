@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import type { ServerMessage } from '../src/shared/protocol'
 import { dispatch, parseClientMessage, type DispatchContext } from './game/dispatch'
 import { emptyState, seatByToken, setConnected } from './game/roster'
@@ -32,6 +33,8 @@ export interface Hub {
 
 export function createHub(opts: { joinUrl: string; ctx: DispatchContext; clueGraceMs?: number }): Hub {
   let state = emptyState()
+  /** New every start: pages that see it change reload to pick up the new build. */
+  const serverId = randomUUID()
   /** Pending grace-period check for a waiting clue whose checker is offline. */
   let clueTimer: ReturnType<typeof setTimeout> | null = null
   const picturesAvailable = opts.ctx.pictures.length >= DECKS.pictures.size
@@ -73,7 +76,7 @@ export function createHub(opts: { joinUrl: string; ctx: DispatchContext; clueGra
     armClueTimer()
     for (const [socket, conn] of conns) {
       if (!conn.client) continue
-      send(socket, { type: 'state', ...viewFor(state, viewerOf(conn), opts.joinUrl, picturesAvailable) })
+      send(socket, { type: 'state', ...viewFor(state, viewerOf(conn), opts.joinUrl, picturesAvailable), server: serverId })
     }
   }
 
