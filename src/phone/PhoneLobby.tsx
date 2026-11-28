@@ -18,6 +18,7 @@ export function PhoneLobby({ view, you, send, disabled }: PhoneScreenProps) {
         <Badge variant="outline">You're in, {name}</Badge>
         <h1>You're on {TEAM_NAME[you.team]}</h1>
         <p>Waiting for the host to start&hellip;</p>
+        <p className="lobby-welcome__deck">{view.deck === 'pictures' ? 'Picture cards' : 'Word cards'}</p>
       </header>
       <div className="phone-lobby__rosters">
         {(['red', 'blue'] as Team[]).map((t) => (
@@ -32,6 +33,7 @@ export function PhoneLobby({ view, you, send, disabled }: PhoneScreenProps) {
                   <li key={p.id}>
                     <span className="player-avatar" aria-hidden="true">{p.name.slice(0, 1).toUpperCase()}</span>
                     <span className="player-name">{p.name}</span>
+                    {view.teams[t].nextClueGiverId === p.id && <Badge variant="secondary">clue-giver</Badge>}
                     {p.id === you.id && <Badge variant="outline">you</Badge>}
                   </li>
                 ))}

@@ -70,6 +70,36 @@ describe('join', () => {
 })
 
 describe('lobby', () => {
+  it("marks who's giving clues next game", () => {
+    setup('phone-lobby')
+    expect(screen.getAllByText('clue-giver')).toHaveLength(2)
+  })
+
+  it('says which cards the host picked', () => {
+    const { view } = structuredClone(FIXTURES['phone-lobby'])
+    setup('phone-lobby', { view: { ...view, deck: 'pictures' } })
+    expect(screen.getByText('Picture cards')).toBeTruthy()
+  })
+
+  it("a picture clue-giver sees their team's pictures, not ids", () => {
+    setup('phone-cluegiver-pictures')
+    const mine = screen.getByRole('list', { name: 'Your pictures' })
+    // Red has 8 cards; 0, 3 and 8 are picked in this fixture.
+    expect(mine.querySelectorAll('img')).toHaveLength(5)
+    expect(screen.queryByText(/card-\d/)).toBeNull()
+  })
+
+  it("a picture clue-giver's key card is laid out like the picture board", () => {
+    const { container } = setup('phone-cluegiver-pictures')
+    expect(container.querySelector('.word-grid--key.word-grid--pictures')).not.toBeNull()
+    expect(container.querySelector('.word-grid--key img')).toBeNull()
+  })
+
+  it('a guesser sees pictures to vote on', () => {
+    const { container } = setup('phone-guesser-pictures')
+    expect(container.querySelectorAll('.word-grid img').length).toBeGreaterThan(0)
+  })
+
   it('shows my team and switches', () => {
     const { send } = setup('phone-lobby')
     expect(screen.getByText("You're on Red")).toBeTruthy()
@@ -158,6 +188,43 @@ describe('clue-giver', () => {
     g.view!.canUndo = false
     render(<PhoneScreen game={g} send={vi.fn()} />)
     expect(button('Undo').disabled).toBe(true)
+  })
+})
+
+describe('clue checking', () => {
+  it('the giver waits, and takes the clue back with its own button', () => {
+    const g = game('phone-cluegiver-waiting-check')
+    g.view!.canUndo = false
+    const send = vi.fn<(m: ClientMessage) => void>()
+    render(<PhoneScreen game={g} send={send} />)
+    expect(screen.getByText('Waiting for Blue to check OCEAN 2…')).toBeTruthy()
+    // The clue box keeps its slot (so the board doesn't jump) but is hidden and inert.
+    expect(screen.getByLabelText('Clue').closest('[inert]')).not.toBeNull()
+    // Undo stays a board undo; taking the clue back is separate.
+    expect(button('Undo').disabled).toBe(true)
+    fireEvent.click(button('Take back'))
+    expect(send).toHaveBeenCalledWith({ type: 'withdraw-clue' })
+  })
+
+  it("the other clue-giver approves or rejects", () => {
+    const { send } = setup('phone-cluegiver-checking')
+    expect(screen.getByText('OCEAN 2')).toBeTruthy()
+    fireEvent.click(button('Approve'))
+    expect(send).toHaveBeenCalledWith({ type: 'clue-verdict', approve: true, word: 'ocean', number: 2 })
+    fireEvent.click(button('Reject'))
+    expect(send).toHaveBeenCalledWith({ type: 'clue-verdict', approve: false, word: 'ocean', number: 2 })
+  })
+
+  it('a rejected clue comes back in the box', () => {
+    setup('phone-cluegiver-rejected')
+    expect(screen.getByText('Blue rejected OCEAN 2 — try another')).toBeTruthy()
+    expect((screen.getByLabelText('Clue') as HTMLInputElement).value).toBe('ocean')
+  })
+
+  it('a guesser sees that the clue is being checked', () => {
+    const g = game('phone-guesser-waiting')
+    setup('phone-guesser-waiting', { view: { ...g.view!, checking: 'red' } })
+    expect(screen.getByText("Blue is checking Red's clue…")).toBeTruthy()
   })
 })
 
@@ -256,6 +323,12 @@ describe('game over', () => {
     expect(screen.getByText('Blue wins')).toBeTruthy()
     expect(screen.getByText('Waiting for the host to start the next game')).toBeTruthy()
     expect(container.querySelectorAll('.word--unknown')).toHaveLength(0)
+  })
+
+  it('shows the picture board, not picture ids', () => {
+    const { container } = setup('phone-over-pictures')
+    expect(container.querySelectorAll('.word-grid img')).toHaveLength(20)
+    expect(screen.queryByText(/card-\d/i)).toBeNull()
   })
 })
 

@@ -17,7 +17,7 @@ export function GameOver({ view, you, send, disabled }: TvScreenProps) {
         <p className="tv-over__why">{why}</p>
       </header>
 
-      {view.board && <WordGrid cards={view.board} showPips={false} voterCount={0} variant="tv" />}
+      {view.board && <WordGrid cards={view.board} showPips={false} voterCount={0} variant="tv" pictures={view.deck === 'pictures'} />}
 
       {you.host && (
         <footer className="tv-over__actions">

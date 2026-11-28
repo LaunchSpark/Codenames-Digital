@@ -27,7 +27,7 @@ export function commit(
   if (!s.game) throw new GameError('not-in-lobby', 'No game is running')
   const game = logged(s.game, label)
   const history = undoable ? [...game.history, game.board] : []
-  return { ...s, game: { ...game, board: next, history, votes: {} } }
+  return { ...s, game: { ...game, board: next, history, votes: {}, pendingClue: null, rejectedClue: null } }
 }
 
 export const canUndo = (s: ServerState): boolean => (s.game?.history.length ?? 0) > 0
@@ -42,7 +42,10 @@ export function undo(s: ServerState, seatId: string): ServerState {
   const name = seatOf(s, seatId)?.name ?? 'A clue-giver'
   const history = game.history.slice(0, -1)
   const board = game.history[game.history.length - 1]
-  return { ...s, game: { ...logged(game, `${name} pressed Undo`), board, history, votes: {} } }
+  return {
+    ...s,
+    game: { ...logged(game, `${name} pressed Undo`), board, history, votes: {}, pendingClue: null, rejectedClue: null },
+  }
 }
 
 /**
@@ -72,6 +75,8 @@ export function hostUndo(s: ServerState, steps: number): ServerState {
       clueGivers: { red: stillHere('red'), blue: stillHere('blue') },
       timeline: game.timeline.slice(0, keep),
       votes: {},
+      pendingClue: null,
+      rejectedClue: null,
     },
   }
 }

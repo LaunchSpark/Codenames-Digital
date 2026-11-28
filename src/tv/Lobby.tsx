@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { ArrowLeftRight, ScanLine, Shuffle, UsersRound, X } from 'lucide-react'
+import { ArrowLeftRight, Crown, ScanLine, Shuffle, UsersRound, X } from 'lucide-react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { LobbyBrand } from '../components/LobbyBrand'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader } from '../components/ui/card'
 import { otherTeam, TEAM_NAME } from '../components/teams'
-import type { ClientMessage, GameView, PlayerInfo, Team, You } from '../shared/protocol'
+import type { ClientMessage, Deck, GameView, PlayerInfo, Team, You } from '../shared/protocol'
 import { JoinQr } from './JoinQr'
 import '../components/lobby.css'
 
@@ -19,6 +19,7 @@ export interface TvScreenProps {
 }
 
 const MIN_PER_TEAM = 2
+const DECKS: [Deck, string][] = [['words', 'Words'], ['pictures', 'Pictures']]
 
 export function Lobby({ view, you, send, disabled }: TvScreenProps) {
   /** Player the host is about to kick, awaiting confirmation. */
@@ -35,6 +36,14 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
           <div className="mode-picker" role="group" aria-label="Mode">
             <Button type="button" variant="secondary" aria-pressed="true">VS</Button>
             <Button type="button" variant="ghost" disabled>Coop <Badge variant="outline">Coming soon</Badge></Button>
+          </div>
+          <div className="mode-picker" role="group" aria-label="Deck">
+            {DECKS.map(([deck, label]) => (
+              <Button key={deck} type="button" variant={view.deck === deck ? 'secondary' : 'ghost'}
+                aria-pressed={view.deck === deck}
+                disabled={!you.host || disabled || (deck === 'pictures' && !view.picturesAvailable)}
+                onClick={() => send({ type: 'host:set-deck', deck })}>{label}</Button>
+            ))}
           </div>
         </div>
       </header>
@@ -53,7 +62,7 @@ export function Lobby({ view, you, send, disabled }: TvScreenProps) {
       </div>
       <footer className="tv-lobby__footer">
         <div><strong>{ready ? 'Everyone ready?' : 'The table is coming together.'}</strong>
-          <p>{ready ? 'Your clue-givers will be chosen when the game starts.' : 'Each team needs at least 2 players'}</p></div>
+          <p>{ready ? 'Your clue-givers will be chosen when the game starts.' : 'Each team needs at least 2 players'}{view.deck === 'pictures' && ' · 20 picture cards, 5×4.'}</p></div>
         {you.host && <div className="tv-lobby__actions">
           <Button type="button" variant="outline" disabled={disabled || playerCount < 2}
             onClick={() => send({ type: 'host:shuffle-teams' })}><Shuffle aria-hidden="true" />Random teams</Button>
@@ -102,9 +111,17 @@ function Roster({ team, view, host, send, disabled, onRemove }: RosterProps) {
             <li key={p.id}>
               <span className="player-avatar" aria-hidden="true">{p.name.slice(0, 1).toUpperCase()}</span>
               <span className={`player-name${p.connected ? '' : ' is-away'}`}>{p.name}</span>
+              {view.teams[team].nextClueGiverId === p.id && <Badge variant="secondary" className="lobby-roster__giver">Clue-giver</Badge>}
               {p.connected
                 ? <span className="presence is-online" aria-label="connected" />
                 : <Badge variant="outline" className="presence-away">away</Badge>}
+              {host && <Button type="button" variant="ghost" size="icon" className="lobby-roster__move"
+                aria-label={`Make ${p.name} clue-giver`} title="Give clues next game"
+                aria-pressed={view.teams[team].nextClueGiverId === p.id}
+                disabled={disabled || view.teams[team].nextClueGiverId === p.id}
+                onClick={() => send({ type: 'host:make-clue-giver', playerId: p.id })}>
+                <Crown aria-hidden="true" />
+              </Button>}
               {host && <Button type="button" variant="ghost" size="icon" className="lobby-roster__move"
                 aria-label={`Move ${p.name} to ${TEAM_NAME[otherTeam(team)]}`}
                 title={`Move to ${TEAM_NAME[otherTeam(team)]}`} disabled={disabled}

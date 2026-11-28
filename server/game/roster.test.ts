@@ -93,6 +93,8 @@ function withGame(s: ServerState): ServerState {
       timeline: [],
       clueGivers: { red: s.roster.order.red[0] ?? null, blue: s.roster.order.blue[0] ?? null },
       votes: {},
+      pendingClue: null,
+      rejectedClue: null,
     },
   }
 }

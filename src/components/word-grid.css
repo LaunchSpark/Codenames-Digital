@@ -177,3 +177,65 @@ button.word:not(:disabled):active {
 /* Pips need to read on solid colour. */
 .word-grid--key .pip { border-color: #fffc; }
 .word-grid--key .pip--filled { background: #fff; }
+
+/* Pictures --------------------------------------------------------------- */
+
+/* The image fills the tile; the border stays visible around it, so a known
+   colour (game over) still reads. The key card has no images and keeps its
+   colour tiles. */
+.word-grid--pictures:not(.word-grid--key) .word {
+  justify-content: flex-end;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.word-grid--phone.word-grid--pictures:not(.word-grid--key) .word {
+  aspect-ratio: 1;
+}
+
+.word__picture {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+/* Known but unpicked (game over): a thicker border carries the colour. */
+.word-grid--pictures .word:not(.word--revealed):not(.word--unknown) {
+  border-width: 3px;
+}
+
+/* Picked: the team colour shows through a faded image. */
+.word-grid--pictures .word--revealed .word__picture {
+  opacity: 0.28;
+}
+
+/* Pips sit on a dark strip along the bottom of the image. */
+.word-grid--pictures:not(.word-grid--key) .pips {
+  position: relative;
+  width: 100%;
+  padding: 0.25em 0;
+  background: #000000a8;
+  color: #fff;
+}
+
+/* TV: zoom past each card's own black frame and corner tab so the drawing
+   fills the tile (the tile clips the overflow), and shrink unpicked cards
+   less. Phones keep the whole card. */
+.word-grid--tv.word-grid--pictures {
+  --unpicked-scale: 0.97;
+}
+
+.word-grid--tv.word-grid--pictures .word__picture {
+  transform: scale(1.12);
+}
+
+/* A picture clue-giver's key card: square tiles, laid out like the board. */
+.word-grid--key.word-grid--pictures .word {
+  aspect-ratio: 1;
+  min-height: 0;
+}

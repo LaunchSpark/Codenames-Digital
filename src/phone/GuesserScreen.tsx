@@ -1,5 +1,5 @@
 import { WordGrid } from '../components/WordGrid'
-import { guessesLeftText, TEAM_NAME } from '../components/teams'
+import { checkingLine, guessesLeftText, TEAM_NAME } from '../components/teams'
 import type { PhoneScreenProps } from './types'
 
 const voteHint = (n: number) => (n === 1 ? 'Tap a word to vote.' : `Vote for up to ${n} words.`)
@@ -15,7 +15,11 @@ export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
       ? `${clue} — ${guessesLeftText(phase.guessesLeft)}. ${voteHint(phase.guessesLeft)}`
       : `${TEAM_NAME[phase.team]} is guessing: ${clue}`
   } else if (phase.name === 'clue') {
-    status = phase.team === you.team ? `Waiting for ${TEAM_NAME[phase.team]}'s clue…` : `${TEAM_NAME[phase.team]}'s turn`
+    status = view.checking
+      ? checkingLine(view.checking)
+      : phase.team === you.team
+        ? `Waiting for ${TEAM_NAME[phase.team]}'s clue…`
+        : `${TEAM_NAME[phase.team]}'s turn`
   } else {
     status = ''
   }
@@ -37,6 +41,7 @@ export function GuesserScreen({ view, you, send, disabled }: PhoneScreenProps) {
           onTap={myGuess ? (card) => send({ type: 'vote', card }) : undefined}
           disabled={disabled}
           variant="phone"
+          pictures={view.deck === 'pictures'}
           dimmed={!myGuess}
         />
       )}

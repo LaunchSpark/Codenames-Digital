@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { BOARD_CELLS } from '../shared/protocol'
 import { FIXTURES, isFixtureName } from './fixtures'
 
 const entries = Object.entries(FIXTURES)
@@ -14,12 +13,12 @@ describe('fixtures', () => {
     }
   })
 
-  it('every in-game fixture has 25 cards', () => {
+  it('every in-game fixture has 25 words or 20 pictures', () => {
     for (const [name, { view }] of entries) {
       if (view.phase.name === 'lobby') {
         expect(view.board, name).toBeNull()
       } else {
-        expect(view.board?.length, name).toBe(BOARD_CELLS)
+        expect(view.board?.length, name).toBe(view.deck === 'pictures' ? 20 : 25)
       }
     }
   })

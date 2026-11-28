@@ -1,6 +1,8 @@
 export type Team = 'red' | 'blue'
 export type CardColor = Team | 'neutral' | 'assassin'
 export type Mode = 'vs' | 'coop'
+/** Which cards the board deals: 25 words, or 20 pictures from public/cards. */
+export type Deck = 'words' | 'pictures'
 
 export interface PlayerInfo {
   id: string
@@ -49,20 +51,28 @@ export interface TeamView {
   players: PlayerInfo[]
   /** Current game's clue-giver; null in lobby or when the host must pick one. */
   clueGiverId: string | null
+  /** Lobby only: who gives this team's clues next game (the host's pick, else the rotation); null mid-game. */
+  nextClueGiverId: string | null
   /** Unrevealed cards of this colour; null in lobby. */
   remaining: number | null
 }
 
 export interface GameView {
   mode: Mode
+  /** The lobby's deck choice; a running game was dealt from it. */
+  deck: Deck
+  /** At least a board's worth of pictures was found at startup; Pictures can't be picked otherwise. */
+  picturesAvailable: boolean
   phase: Phase
-  /** 25 cards, row-major; null in lobby. */
+  /** 20 or 25 cards, row-major; null in lobby. */
   board: CardView[] | null
   teams: Record<Team, TeamView>
   /** Team owning 9 cards and going first; null in lobby. */
   startingTeam: Team | null
   /** All clues this game, oldest first. */
   clues: Clue[]
+  /** The team whose clue the other clue-giver is checking; the clue itself only reaches the two clue-givers. */
+  checking: Team | null
   /** Pip slots per card = connected guessers on the guessing team (0 outside 'guess'). */
   voterCount: number
   /** Guessers currently voting to end the turn. */
@@ -92,6 +102,10 @@ export type You =
       votes: number[]
       /** This player is voting to end the turn (never alongside card votes). */
       votedEnd: boolean
+      /** The clue waiting to be checked: set only for its giver and the checking clue-giver. */
+      pendingClue: Clue | null
+      /** This team's last rejected clue: set only for that team's clue-giver. */
+      rejectedClue: Clue | null
     }
 
 export type ErrorCode =
@@ -107,10 +121,12 @@ export type ErrorCode =
   | 'nothing-to-undo'
   | 'unknown-player'
   | 'clue-giver-locked'
+  | 'no-pictures'
 
 export type ServerMessage =
   | { type: 'welcome'; token: string; playerId: string }
-  | { type: 'state'; view: GameView; you: You }
+  /** `server` is new each time the server starts, so a page left open across a restart knows to reload. */
+  | { type: 'state'; view: GameView; you: You; server: string }
   | { type: 'error'; code: ErrorCode; message: string }
 
 export type ClientMessage =
@@ -120,6 +136,13 @@ export type ClientMessage =
   | { type: 'join'; name: string; team: Team }
   /** Active clue-giver, during their team's 'clue' phase. */
   | { type: 'clue'; word: string; number: number }
+  /**
+   * The other team's clue-giver, while a clue waits: approve shows it, reject hands it back.
+   * Names the clue it rules on, so a verdict can't land on a clue sent after it.
+   */
+  | { type: 'clue-verdict'; approve: boolean; word: string; number: number }
+  /** The giver takes back their waiting clue; does nothing once it's been ruled on. */
+  | { type: 'withdraw-clue' }
   /**
    * Guesser on the guessing team. Toggles this card in their votes; they may
    * back up to guessesLeft cards, and a new card past that replaces their oldest.
@@ -133,16 +156,20 @@ export type ClientMessage =
   | { type: 'host:start' }
   | { type: 'host:new-game' }
   | { type: 'host:lobby' }
+  /** Mid-game: a fresh board from the same deck; same clue-givers, clues and undo history start over. */
+  | { type: 'host:redraw' }
   | { type: 'host:make-clue-giver'; playerId: string }
   | { type: 'host:skip-turn' }
   | { type: 'host:remove-player'; playerId: string }
   /** Step back through the timeline, host corrections included; steps >= 1. */
   | { type: 'host:undo'; steps: number }
+  /** (host:make-clue-giver also works in the lobby: it picks that team's clue-giver for the next game.) */
   /** Lobby or mid-game; refused (clue-giver-locked) for a current clue-giver mid-game. */
   | { type: 'host:move-player'; playerId: string; team: Team }
   /** Lobby only: everyone into two balanced teams, random order. */
   | { type: 'host:shuffle-teams' }
+  /** Lobby only; Pictures needs picturesAvailable. */
+  | { type: 'host:set-deck'; deck: Deck }
 
 export const SEAT_STORAGE_KEY = 'codenames-seat'
 export const WS_PATH = '/ws'
-export const BOARD_CELLS = 25

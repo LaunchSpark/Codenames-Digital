@@ -4,12 +4,13 @@ import { dispatch, parseClientMessage, type DispatchContext, type Sender } from 
 import { seededRandom } from './random'
 import { castVote, giveClue, voters } from './rules'
 import type { ServerState } from './state'
-import { codeOf, colorIndex, lobby, startRed } from './testing'
+import { codeOf, colorIndex, lobby, PICTURES, startRed } from './testing'
 import { WORDS } from './words'
 
 let n = 0
 const ctx: DispatchContext = {
   words: WORDS,
+  pictures: PICTURES,
   rand: seededRandom(5),
   newId: () => `p${++n}`,
   newToken: () => `tok${n}`,
@@ -22,6 +23,41 @@ const run = (s: ServerState, from: Sender, msg: ClientMessage) => dispatch(s, fr
 const guess = () => giveClue(startRed(), 'ann', 'ocean', 2)
 
 describe('dispatch', () => {
+  it('lets the host redraw the board, and nobody else', () => {
+    const s = startRed()
+    const words = (x: ServerState) => x.game!.board.cards.map((c) => c.word)
+    expect(words(run(s, host, { type: 'host:redraw' }).state)).not.toEqual(words(s))
+    expect(codeOf(() => run(s, as('ann'), { type: 'host:redraw' }))).toBe('not-host')
+  })
+
+  it("a clue from ann waits; dee's verdict message approves it", () => {
+    const sent = run(startRed(), as('ann'), { type: 'clue', word: 'ocean', number: 2 }).state
+    expect(sent.game!.board.phase.name).toBe('clue')
+    expect(sent.game!.pendingClue?.clue.word).toBe('ocean')
+    const approved = run(sent, as('dee'), { type: 'clue-verdict', approve: true, word: 'ocean', number: 2 }).state
+    expect(approved.game!.board.phase.name).toBe('guess')
+  })
+
+  it('rejects a malformed verdict', () => {
+    expect(codeOf(() => parseClientMessage('{"type":"clue-verdict","approve":"yes","word":"ocean","number":2}'))).toBe('bad-message')
+    expect(codeOf(() => parseClientMessage('{"type":"clue-verdict","approve":true}'))).toBe('bad-message')
+    expect(parseClientMessage('{"type":"withdraw-clue"}')).toEqual({ type: 'withdraw-clue' })
+  })
+
+  it('lets the host pick the picture deck, then deals pictures', () => {
+    const picked = run(lobby(), host, { type: 'host:set-deck', deck: 'pictures' }).state
+    expect(picked.deck).toBe('pictures')
+    expect(run(picked, host, { type: 'host:start' }).state.game!.board.cards).toHaveLength(20)
+  })
+
+  it('refuses a deck change from a player', () => {
+    expect(codeOf(() => run(lobby(), as('ann'), { type: 'host:set-deck', deck: 'pictures' }))).toBe('not-host')
+  })
+
+  it('rejects an unknown deck', () => {
+    expect(codeOf(() => parseClientMessage('{"type":"host:set-deck","deck":"emoji"}'))).toBe('bad-message')
+  })
+
   it('refuses host actions from non-host connections', () => {
     const msgs: ClientMessage[] = [
       { type: 'host:start' },
@@ -80,6 +116,7 @@ describe('dispatch', () => {
 
   it('routes play messages to the rules', () => {
     let s = run(startRed(), as('ann'), { type: 'clue', word: 'ocean', number: 2 }).state
+    s = run(s, as('dee'), { type: 'clue-verdict', approve: true, word: 'ocean', number: 2 }).state
     expect(s.game!.board.phase.name).toBe('guess')
     s = run(s, as('bob'), { type: 'vote', card: 4 }).state
     expect(s.game!.votes).toEqual({ bob: [4] })

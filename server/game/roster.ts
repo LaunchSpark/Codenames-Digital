@@ -7,7 +7,8 @@ const MAX_NAME = 20
 export function emptyState(): ServerState {
   return {
     mode: 'vs',
-    roster: { seats: {}, order: { red: [], blue: [] }, nextClueGiver: { red: 0, blue: 0 } },
+    deck: 'words',
+    roster: { seats: {}, order: { red: [], blue: [] }, nextClueGiver: { red: 0, blue: 0 }, picked: { red: null, blue: null } },
     game: null,
   }
 }
@@ -134,19 +135,39 @@ export function setConnected(s: ServerState, id: string, delta: 1 | -1): ServerS
 }
 
 /** Assigns each team's clue-giver for a new game from the rotation, then advances it. */
+/**
+ * Position in `team`'s order of who gives clues next game: the host's pick if
+ * they're still on the team and connected, otherwise the rotation, passing
+ * over disconnected players (if nobody is connected, whoever is due). -1 for
+ * an empty team.
+ */
+function dueIndex(s: ServerState, team: Team): number {
+  const ids = s.roster.order[team]
+  if (!ids.length) return -1
+  const picked = s.roster.picked[team]
+  const pickedAt = picked ? ids.indexOf(picked) : -1
+  if (pickedAt >= 0 && isConnected(s.roster.seats[picked!])) return pickedAt
+  const start = s.roster.nextClueGiver[team] % ids.length
+  const skip = Math.max(0, ids.findIndex((_, k) => isConnected(s.roster.seats[ids[(start + k) % ids.length]])))
+  return (start + skip) % ids.length
+}
+
+/** Who gives `team`'s clues next game; null for an empty team. */
+export function dueClueGiver(s: ServerState, team: Team): string | null {
+  const at = dueIndex(s, team)
+  return at < 0 ? null : s.roster.order[team][at]
+}
+
+/** Each team's clue-giver for a new game. Uses up the host's picks; the rotation carries on after whoever was chosen. */
 export function pickClueGivers(s: ServerState): { state: ServerState; clueGivers: Record<Team, string | null> } {
-  const { order, nextClueGiver } = s.roster
-  const next = { ...nextClueGiver }
+  const next = { ...s.roster.nextClueGiver }
   const clueGivers: Record<Team, string | null> = { red: null, blue: null }
   for (const team of ['red', 'blue'] as Team[]) {
-    const ids = order[team]
-    if (!ids.length) continue
-    // Pass over disconnected players; if nobody is connected, take whoever is due.
-    const start = next[team] % ids.length
-    let skip = ids.findIndex((_, k) => isConnected(s.roster.seats[ids[(start + k) % ids.length]]))
-    if (skip < 0) skip = 0
-    clueGivers[team] = ids[(start + skip) % ids.length]
-    next[team] += skip + 1
+    const at = dueIndex(s, team)
+    if (at < 0) continue
+    clueGivers[team] = s.roster.order[team][at]
+    next[team] = at + 1
   }
-  return { state: { ...s, roster: { ...s.roster, nextClueGiver: next } }, clueGivers }
+  const roster = { ...s.roster, nextClueGiver: next, picked: { red: null, blue: null } }
+  return { state: { ...s, roster }, clueGivers }
 }

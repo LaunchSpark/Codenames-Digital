@@ -4,21 +4,24 @@ import {
   backToLobby,
   castEndVote,
   castVote,
-  giveClue,
   makeClueGiver,
   moveSeat,
   newGame,
-  settleVotes,
+  redrawBoard,
+  setDeck,
   skipTurn,
   startGame,
 } from './rules'
 import { GameError, type ServerState } from './state'
+import { clueVerdict, settle, submitClue, withdrawClue } from './review'
 import { hostUndo, undo } from './undo'
 
 export type Sender = { host: boolean; seatId: string | null }
 
 export interface DispatchContext {
   words: readonly string[]
+  /** Picture ids found at startup (`card-0`, …); empty when there are none. */
+  pictures: readonly string[]
   rand: () => number
   newId: () => string
   newToken: () => string
@@ -54,12 +57,16 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
       }
       const id = ctx.newId()
       const token = ctx.newToken()
-      const state = settleVotes(addSeat(s, { id, token, name: msg.name, team: msg.team }))
+      const state = settle(addSeat(s, { id, token, name: msg.name, team: msg.team }))
       return { state, reply: { type: 'welcome', token, playerId: id }, seatId: id }
     }
 
     case 'clue':
-      return { state: giveClue(s, seated(from), msg.word, msg.number) }
+      return { state: submitClue(s, seated(from), msg.word, msg.number) }
+    case 'clue-verdict':
+      return { state: clueVerdict(s, seated(from), msg.approve, { word: msg.word, number: msg.number }) }
+    case 'withdraw-clue':
+      return { state: withdrawClue(s, seated(from)) }
     case 'vote':
       return { state: castVote(s, seated(from), msg.card) }
     case 'vote-end':
@@ -68,9 +75,11 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
       return { state: undo(s, seated(from)) }
 
     case 'host:start':
-      return { state: startGame(s, ctx.words, ctx.rand) }
+      return { state: startGame(s, ctx.words, ctx.rand, ctx.pictures) }
     case 'host:new-game':
-      return { state: newGame(s, ctx.words, ctx.rand) }
+      return { state: newGame(s, ctx.words, ctx.rand, ctx.pictures) }
+    case 'host:redraw':
+      return { state: redrawBoard(s, ctx.words, ctx.rand, ctx.pictures) }
     case 'host:lobby':
       return { state: backToLobby(s) }
     case 'host:make-clue-giver':
@@ -78,13 +87,15 @@ export function dispatch(s: ServerState, from: Sender, msg: ClientMessage, ctx: 
     case 'host:skip-turn':
       return { state: skipTurn(s) }
     case 'host:remove-player':
-      return { state: settleVotes(removeSeat(s, msg.playerId)) }
+      return { state: settle(removeSeat(s, msg.playerId)) }
     case 'host:move-player':
       return { state: moveSeat(s, msg.playerId, msg.team) }
     case 'host:shuffle-teams':
       return { state: shuffleTeams(s, ctx.rand) }
     case 'host:undo':
       return { state: hostUndo(s, msg.steps) }
+    case 'host:set-deck':
+      return { state: setDeck(s, msg.deck, ctx.pictures) }
   }
 }
 
@@ -97,18 +108,22 @@ const SHAPES: Record<ClientMessage['type'], (m: Record<string, unknown>) => bool
   hello: (m) => m.client === 'tv' || (m.client === 'player' && (m.token === null || isString(m.token))),
   join: (m) => isString(m.name) && isTeam(m.team),
   clue: (m) => isString(m.word) && isNumber(m.number),
+  'clue-verdict': (m) => typeof m.approve === 'boolean' && isString(m.word) && isNumber(m.number),
+  'withdraw-clue': () => true,
   vote: (m) => isNumber(m.card),
   'vote-end': () => true,
   undo: () => true,
   'host:start': () => true,
   'host:new-game': () => true,
   'host:lobby': () => true,
+  'host:redraw': () => true,
   'host:make-clue-giver': (m) => isString(m.playerId),
   'host:skip-turn': () => true,
   'host:remove-player': (m) => isString(m.playerId),
   'host:undo': (m) => isNumber(m.steps),
   'host:move-player': (m) => isString(m.playerId) && isTeam(m.team),
   'host:shuffle-teams': () => true,
+  'host:set-deck': (m) => m.deck === 'words' || m.deck === 'pictures',
 }
 
 export function parseClientMessage(raw: string): ClientMessage {

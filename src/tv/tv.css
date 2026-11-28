@@ -335,3 +335,12 @@
   padding-top: calc(1.2 * var(--tvu));
   border-top: 1px solid var(--line);
 }
+
+/* Pictures: 5×4 near-square tiles, sized by the height the board gets. */
+.tv-board__grid .word-grid--pictures,
+.tv-over .word-grid--pictures {
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: 5 / 4;
+  margin-inline: auto;
+}

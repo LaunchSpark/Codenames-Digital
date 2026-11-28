@@ -25,6 +25,31 @@ describe('WordGrid', () => {
     expect(getByText('PEAR')).toBeTruthy()
   })
 
+  it('draws pictures instead of words', () => {
+    const { container } = render(
+      <WordGrid cards={[card({ word: 'card-3' }), card({ word: 'card-12' })]} showPips={false} voterCount={0} variant="tv" pictures />,
+    )
+    const img = container.querySelector<HTMLImageElement>('img[alt="Picture 3"]')
+    expect(img?.getAttribute('src')).toBe('/cards/card-3.jpg')
+    expect(container.querySelectorAll('img')).toHaveLength(2)
+    expect(container.querySelector('.word__text')).toBeNull()
+  })
+
+  it('keeps pips on an unrevealed picture', () => {
+    const { container } = render(
+      <WordGrid cards={[card({ word: 'card-3', votes: 1 })]} showPips voterCount={2} variant="phone" pictures />,
+    )
+    expect(container.querySelectorAll('.pip')).toHaveLength(2)
+  })
+
+  it('a picture key card stays colour-only', () => {
+    const { container, getByLabelText } = render(
+      <WordGrid cards={[card({ word: 'card-3', color: 'blue' })]} showPips={false} voterCount={0} variant="phone" keyCard pictures />,
+    )
+    expect(container.querySelector('img')).toBeNull()
+    expect(getByLabelText('Picture 3: blue')).toBeTruthy()
+  })
+
   it('dims the whole board when asked, and only then', () => {
     const dim = render(<WordGrid cards={[card()]} showPips={false} voterCount={0} variant="phone" dimmed />)
     expect(dim.container.querySelector('.word-grid--dimmed')).not.toBeNull()
